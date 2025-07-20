@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is Josh Mu's experimental sandbox - a Turborepo monorepo for testing modern web development patterns. The codebase uses pnpm workspaces to manage multiple Next.js applications and shared packages.
+This is Josh Mu's experimental lab - a Turborepo monorepo for testing modern web development patterns. The codebase uses pnpm workspaces to manage multiple Next.js applications and shared packages.
 
 ## Essential Commands
 

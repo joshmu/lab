@@ -23,10 +23,10 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <h1 style={{ fontSize: "2.5rem", margin: "2rem 0 1rem", textAlign: "center", fontFamily: "monospace" }}>
-          Josh Mu&apos;s Sandbox 🏝️
+          Josh Mu&apos;s Lab 🧪
         </h1>
         <p style={{ fontSize: "1.2rem", color: "#666", marginBottom: "2rem", textAlign: "center" }}>
-          Welcome to my experimentation playground
+          Welcome to my experimentation lab
         </p>
         <ol>
           <li>Breaking things, learning patterns, and pushing boundaries</li>
@@ -63,7 +63,7 @@ export default function Home() {
       </main>
       <footer className={styles.footer}>
         <a
-          href="https://github.com/joshmu/sandbox"
+          href="https://github.com/joshmu/lab"
           target="_blank"
           rel="noopener noreferrer"
         >

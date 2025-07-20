@@ -1,10 +1,8 @@
-# Josh Mu's Sandbox 🏖️
+# Lab 🧪
 
 ## About
 
 A space to selfishly experiment freely and break things.
-
-Find me on GitHub: [github.com/joshmu](https://github.com/joshmu)
 
 ## What's Inside?
 
