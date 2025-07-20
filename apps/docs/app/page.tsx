@@ -69,7 +69,7 @@ export default function Home() {
       </main>
       <footer className={styles.footer}>
         <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
+          href="https://vercel.com/templates?search=turborepo&utm_source=lab.joshmu.dev&utm_medium=appdir-template&utm_campaign=lab.joshmu.dev"
           target="_blank"
           rel="noopener noreferrer"
         >

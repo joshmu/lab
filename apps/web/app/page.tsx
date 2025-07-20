@@ -110,7 +110,7 @@ export default function Home() {
             </div>
             
             <p className="text-xl md:text-2xl font-mono text-gray-600 dark:text-gray-400 max-w-2xl mt-6">
-              Welcome to my experimentation lab
+              A place for experiments
             </p>
             
             <div className="flex items-center gap-3 text-sm font-mono mt-6">
@@ -129,7 +129,7 @@ export default function Home() {
           {/* Experimental Landing Pages Grid */}
           <section className="mb-16">
             <h2 className="text-3xl md:text-4xl font-black mb-8 uppercase tracking-tight">
-              Experimental Landing Pages
+              Mouse-Reactive Backgrounds
             </h2>
           
           <div 
