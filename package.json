@@ -1,5 +1,7 @@
 {
-  "name": "sandbox",
+  "name": "joshmu-sandbox",
+  "description": "Josh Mu's Turborepo experimentation sandbox",
+  "author": "Josh Mu <https://github.com/joshmu>",
   "private": true,
   "scripts": {
     "build": "turbo run build",
