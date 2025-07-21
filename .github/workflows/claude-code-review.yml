@@ -1,3 +1,18 @@
+# Claude Code Review with OpenAI via Claude Code Router
+#
+# This workflow uses Claude Code Router to proxy requests to OpenAI instead of Claude.
+# 
+# Required GitHub Secrets:
+#   - OPENAI_API_KEY: Your OpenAI API key
+#
+# Configuration:
+#   - Model: gpt-4.1 (can be changed in config.json)
+#   - Router: Uses @musistudio/claude-code-router@1.0.8
+#   - Proxy: Routes through http://localhost:3456
+#
+# To change the OpenAI model, update the OPENAI_MODEL value in the config.json section below.
+# Available models: gpt-4.1, gpt-4.1-mini, gpt-4.1-nano, gpt-4, gpt-4-turbo-preview, etc.
+
 name: Claude Code Review
 
 on:
@@ -31,11 +46,36 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Install Bun and configure Claude Code Router to use OpenAI
+      - name: Prepare Environment
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          mkdir -p $HOME/.claude-code-router
+          cat << 'EOF' > $HOME/.claude-code-router/config.json
+          {
+            "log": true,
+            "OPENAI_API_KEY": "${{ secrets.OPENAI_API_KEY }}",
+            "OPENAI_BASE_URL": "https://api.openai.com/v1",
+            "OPENAI_MODEL": "gpt-4.1"
+          }
+          EOF
+        shell: bash
+
+      # Start Claude Code Router as a background service
+      - name: Start Claude Code Router
+        run: |
+          nohup ~/.bun/bin/bunx @musistudio/claude-code-router@1.0.8 start &
+        shell: bash
+
+      # Run Claude Code Review using the router proxy
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_BASE_URL: http://localhost:3456
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Required: Add OPENAI_API_KEY to your GitHub repository secrets
+          anthropic_api_key: "claude-code-router-proxy"
 
           # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
           # model: "claude-opus-4-20250514"
