@@ -1,0 +1,63 @@
+{
+  "id": "organic-evolution-005",
+  "title": "Organic Evolution",
+  "description": "Generative patterns with geometric shapes that evolve and transform organically, creating complex emergent behaviors.",
+  "slug": "organic-evolution",
+  "category": "interactive-animations",
+  "tags": ["generative", "evolution", "organic", "geometric", "emergence", "patterns"],
+  "difficulty": "advanced",
+  "status": "published",
+  "techStack": [
+    {
+      "name": "React",
+      "version": "19.1.0",
+      "category": "framework"
+    },
+    {
+      "name": "TypeScript",
+      "category": "language"
+    },
+    {
+      "name": "Canvas API",
+      "category": "tool"
+    },
+    {
+      "name": "Next.js",
+      "version": "15.3.0",
+      "category": "framework"
+    },
+    {
+      "name": "Tailwind CSS",
+      "category": "library"
+    }
+  ],
+  "estimatedTime": "2 hours",
+  "createdAt": "2025-01-19T08:45:00.000Z",
+  "updatedAt": "2025-01-24T13:10:00.000Z",
+  "version": "1.0.0",
+  "author": "Josh Mu",
+  "featured": false,
+  "socialLinks": {},
+  "prerequisites": [
+    "Advanced algorithmic thinking",
+    "Understanding of generative art",
+    "Knowledge of evolutionary algorithms",
+    "Complex animation techniques"
+  ],
+  "learningObjectives": [
+    "Implement generative algorithms",
+    "Create evolving pattern systems",
+    "Apply organic growth principles",
+    "Design emergent behaviors",
+    "Master complex geometric transformations"
+  ],
+  "keywords": [
+    "generative art",
+    "organic patterns",
+    "evolutionary algorithms",
+    "emergence",
+    "geometric evolution",
+    "procedural generation"
+  ],
+  "excerpt": "Complex generative patterns that evolve organically over time, demonstrating emergent behaviors and evolutionary art principles."
+}

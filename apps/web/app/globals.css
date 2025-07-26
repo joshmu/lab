@@ -18,6 +18,21 @@ a {
   text-decoration: none;
 }
 
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .imgDark {
   display: none;
 }
@@ -71,6 +86,23 @@ a {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brutalist Design Tokens */
+  --color-brutalist-primary: oklch(0 0 0); /* Pure black */
+  --color-brutalist-primary-inverse: oklch(1 0 0); /* Pure white */
+  --color-brutalist-accent: oklch(0.866 0.178 91.29); /* Yellow #FFFF00 */
+  --color-brutalist-danger: oklch(0.577 0.245 27.33); /* Red #FF0000 */
+  --color-brutalist-success: oklch(0.723 0.191 142.5); /* Green #00FF00 */
+  --color-brutalist-purple: oklch(0.525 0.223 303.2); /* Purple #A855F7 */
+  --color-brutalist-pink: oklch(0.641 0.276 348.3); /* Pink #EC4899 */
+  --color-brutalist-cyan: oklch(0.731 0.14 208.6); /* Cyan #06B6D4 */
+  --color-brutalist-orange: oklch(0.72 0.191 41.2); /* Orange #F97316 */
+  
+  /* Brutalist animation values */
+  --animation-brutalist-duration-fast: 150ms;
+  --animation-brutalist-duration-normal: 200ms;
+  --animation-brutalist-duration-slow: 300ms;
+  --animation-brutalist-easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root {
@@ -164,4 +196,38 @@ a {
   .grid-equal-height {
     grid-auto-rows: 1fr;
   }
+}
+
+
+/* Brutalist Animations */
+@keyframes brutalist-glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
+
+@keyframes brutalist-slam {
+  0% { transform: scale(1) rotate(0deg) }
+  50% { transform: scale(1.05) rotate(-1deg) }
+  100% { transform: scale(1) rotate(0deg) }
+}
+
+@keyframes brutalist-pulse {
+  0%, 100% { box-shadow: 8px 8px 0px 0px rgb(0,0,0) }
+  50% { box-shadow: 12px 12px 0px 0px rgb(0,0,0) }
+}
+
+.animate-brutalist-glitch {
+  animation: brutalist-glitch 0.3s ease-in-out infinite;
+}
+
+.animate-brutalist-slam {
+  animation: brutalist-slam 0.2s ease-out;
+}
+
+.animate-brutalist-pulse {
+  animation: brutalist-pulse 2s ease-in-out infinite;
 }

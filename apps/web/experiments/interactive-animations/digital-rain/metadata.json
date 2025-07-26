@@ -1,0 +1,62 @@
+{
+  "id": "digital-rain-006",
+  "title": "Digital Rain",
+  "description": "Matrix-style falling ASCII characters with authentic green-on-black terminal aesthetics and dynamic character generation.",
+  "slug": "digital-rain",
+  "category": "interactive-animations",
+  "tags": ["matrix", "ascii", "terminal", "retro", "cyber", "falling-text"],
+  "difficulty": "beginner",
+  "status": "published",
+  "techStack": [
+    {
+      "name": "React",
+      "version": "19.1.0",
+      "category": "framework"
+    },
+    {
+      "name": "TypeScript",
+      "category": "language"
+    },
+    {
+      "name": "Canvas API",
+      "category": "tool"
+    },
+    {
+      "name": "Next.js",
+      "version": "15.3.0",
+      "category": "framework"
+    },
+    {
+      "name": "Tailwind CSS",
+      "category": "library"
+    }
+  ],
+  "estimatedTime": "30 mins",
+  "createdAt": "2025-01-20T16:20:00.000Z",
+  "updatedAt": "2025-01-25T10:05:00.000Z",
+  "version": "1.0.0",
+  "author": "Josh Mu",
+  "featured": false,
+  "socialLinks": {},
+  "prerequisites": [
+    "Basic React knowledge",
+    "Canvas API basics",
+    "Understanding of text rendering"
+  ],
+  "learningObjectives": [
+    "Implement text-based animations",
+    "Create authentic Matrix effects",
+    "Handle character generation and falling motion",
+    "Apply retro terminal aesthetics",
+    "Optimize text rendering performance"
+  ],
+  "keywords": [
+    "matrix effect",
+    "digital rain",
+    "ascii animation",
+    "terminal aesthetics",
+    "retro computing",
+    "text effects"
+  ],
+  "excerpt": "Classic Matrix digital rain effect with falling ASCII characters, perfect for learning text-based canvas animations."
+}

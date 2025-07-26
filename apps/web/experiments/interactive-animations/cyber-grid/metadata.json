@@ -1,0 +1,62 @@
+{
+  "id": "cyber-grid-003",
+  "title": "Cyber Grid",
+  "description": "3D perspective grid with cyberpunk aesthetics, featuring dynamic depth perception and futuristic visual effects.",
+  "slug": "cyber-grid",
+  "category": "interactive-animations",
+  "tags": ["3d", "grid", "cyberpunk", "perspective", "futuristic", "wireframe"],
+  "difficulty": "intermediate",
+  "status": "published",
+  "techStack": [
+    {
+      "name": "React",
+      "version": "19.1.0",
+      "category": "framework"
+    },
+    {
+      "name": "TypeScript",
+      "category": "language"
+    },
+    {
+      "name": "Canvas API",
+      "category": "tool"
+    },
+    {
+      "name": "Next.js",
+      "version": "15.3.0",
+      "category": "framework"
+    },
+    {
+      "name": "Tailwind CSS",
+      "category": "library"
+    }
+  ],
+  "estimatedTime": "50 mins",
+  "createdAt": "2025-01-17T11:30:00.000Z",
+  "updatedAt": "2025-01-22T09:15:00.000Z",
+  "version": "1.0.0",
+  "author": "Josh Mu",
+  "featured": false,
+  "socialLinks": {},
+  "prerequisites": [
+    "Basic 3D math concepts",
+    "Canvas API knowledge",
+    "Understanding of perspective projection"
+  ],
+  "learningObjectives": [
+    "Implement 3D perspective projection",
+    "Create dynamic grid animations",
+    "Apply cyberpunk visual aesthetics",
+    "Handle 3D transformations in 2D canvas",
+    "Optimize 3D rendering performance"
+  ],
+  "keywords": [
+    "3d grid",
+    "cyberpunk",
+    "perspective",
+    "wireframe",
+    "futuristic ui",
+    "3d projection"
+  ],
+  "excerpt": "A mesmerizing 3D grid that responds to interaction with cyberpunk-inspired visual effects and smooth perspective animations."
+}

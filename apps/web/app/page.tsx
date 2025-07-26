@@ -2,98 +2,52 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Github, Globe, Sparkles, Zap, Cpu, Binary, Droplets, Grid3x3 } from "lucide-react";
+import { ArrowRight, Github, Globe } from "lucide-react";
+import { NavigationTree } from "./components/navigation/NavigationTree";
+import { SearchBar } from "./components/navigation/SearchBar";
+import { FilterPanel } from "./components/navigation/FilterPanel";
+import { BrutalistWrapper } from "./lib/brutalist-wrapper";
+import { BRUTALIST_THEME, brutalistClasses } from "./lib/brutalist-theme";
+import type { NavigationNode, FilterOptions, ExperimentMetadata } from "../lib/experiment-processing/types";
+import { cn } from "@/lib/utils";
 
-const landingPages = [
-  {
-    id: 1,
-    href: "/landing-1",
-    title: "Particle System",
-    description: "Interactive particle field with mouse attraction",
-    icon: <Sparkles className="w-6 h-6" />,
-    color: "bg-purple-500",
-    borderColor: "border-purple-600",
-    hoverBg: "hover:bg-purple-50 dark:hover:bg-purple-950/20",
-    shadowColor: "hover:shadow-[8px_8px_0px_0px_rgb(147,51,234)]",
-    tag: "Physics"
-  },
-  {
-    id: 2,
-    href: "/landing-2",
-    title: "Liquid Morphing",
-    description: "Fluid blob animations with metaball effects",
-    icon: <Droplets className="w-6 h-6" />,
-    color: "bg-pink-500",
-    borderColor: "border-pink-600",
-    hoverBg: "hover:bg-pink-50 dark:hover:bg-pink-950/20",
-    shadowColor: "hover:shadow-[8px_8px_0px_0px_rgb(236,72,153)]",
-    tag: "Organic"
-  },
-  {
-    id: 3,
-    href: "/landing-3",
-    title: "Cyber Grid",
-    description: "3D perspective grid with cyberpunk aesthetics",
-    icon: <Grid3x3 className="w-6 h-6" />,
-    color: "bg-cyan-500",
-    borderColor: "border-cyan-600",
-    hoverBg: "hover:bg-cyan-50 dark:hover:bg-cyan-950/20",
-    shadowColor: "hover:shadow-[8px_8px_0px_0px_rgb(6,182,212)]",
-    tag: "3D"
-  },
-  {
-    id: 4,
-    href: "/landing-4",
-    title: "Glitch Art",
-    description: "Digital interference and RGB split effects",
-    icon: <Zap className="w-6 h-6" />,
-    color: "bg-red-500",
-    borderColor: "border-red-600",
-    hoverBg: "hover:bg-red-50 dark:hover:bg-red-950/20",
-    shadowColor: "hover:shadow-[8px_8px_0px_0px_rgb(239,68,68)]",
-    tag: "Chaos"
-  },
-  {
-    id: 5,
-    href: "/landing-5",
-    title: "Organic Evolution",
-    description: "Generative patterns with geometric shapes",
-    icon: <Cpu className="w-6 h-6" />,
-    color: "bg-orange-500",
-    borderColor: "border-orange-600",
-    hoverBg: "hover:bg-orange-50 dark:hover:bg-orange-950/20",
-    shadowColor: "hover:shadow-[8px_8px_0px_0px_rgb(249,115,22)]",
-    tag: "Generative"
-  },
-  {
-    id: 6,
-    href: "/landing-6",
-    title: "Digital Rain",
-    description: "Matrix-style falling ASCII characters",
-    icon: <Binary className="w-6 h-6" />,
-    color: "bg-green-500",
-    borderColor: "border-green-600",
-    hoverBg: "hover:bg-green-50 dark:hover:bg-green-950/20",
-    shadowColor: "hover:shadow-[8px_8px_0px_0px_rgb(34,197,94)]",
-    tag: "Matrix"
-  }
-];
+// Route mapping for experiments to landing pages
+const experimentRouteMap: Record<string, string> = {
+  'particle-system': '/landing-1',
+  'liquid-morphing': '/landing-2',
+  'cyber-grid': '/landing-3',
+  'glitch-art': '/landing-4',
+  'organic-evolution': '/landing-5',
+  'digital-rain': '/landing-6'
+};
 
 export default function Home() {
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [navigationData, setNavigationData] = useState<{ nodes: NavigationNode[]; searchIndex: any } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<FilterOptions>({});
+  const [loading, setLoading] = useState(true);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/experiments')
+      .then(res => res.json())
+      .then(data => {
+        setNavigationData({
+          nodes: data.navigationTree?.nodes || [],
+          searchIndex: data.searchIndex || null
+        });
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load experiments:', err);
+        setLoading(false);
+      });
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white selection:bg-yellow-300 selection:text-black dark:selection:bg-yellow-400">
@@ -126,74 +80,64 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Experimental Landing Pages Grid */}
+          {/* Experiment Explorer Section */}
           <section className="mb-16">
-            <h2 className="text-3xl md:text-4xl font-black mb-8 uppercase tracking-tight">
-              Mouse-Reactive Backgrounds
+            <h2 className={cn(
+              "text-3xl md:text-4xl mb-8",
+              BRUTALIST_THEME.typography.heading
+            )}>
+              EXPERIMENT EXPLORER
             </h2>
           
-          <div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grid-equal-height"
-            onMouseMove={handleMouseMove}
-          >
-            {landingPages.map((page) => (
-              <Link
-                key={page.id}
-                href={page.href}
-                onMouseEnter={() => setHoveredCard(page.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className="group relative h-full"
-              >
-                <Card 
-                  className={`
-                    relative overflow-hidden border-4 border-black dark:border-white rounded-none 
-                    transition-all duration-200 ease-out cursor-pointer h-full
-                    ${hoveredCard === page.id ? page.shadowColor : ''}
-                    ${page.hoverBg}
-                    hover:-translate-y-1 hover:translate-x-1
-                  `}
-                >
-                  <div className="p-6 space-y-4 h-full flex flex-col">
-                    <div className="flex items-start justify-between">
-                      <div className={`p-3 inline-block ${page.color} text-white rounded-none`}>
-                        {page.icon}
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className="rounded-none border-2 border-black dark:border-white font-mono text-xs"
-                      >
-                        {page.tag}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex-grow">
-                      <h3 className="text-2xl font-black mb-2 group-hover:underline underline-offset-4">
-                        {page.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 font-medium">
-                        {page.description}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center text-sm font-bold uppercase tracking-wide">
-                      <span>Explore</span>
-                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                  
-                  {/* Hover effect overlay */}
-                  {hoveredCard === page.id && (
-                    <div 
-                      className="absolute inset-0 pointer-events-none opacity-10"
-                      style={{
-                        background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, currentColor 0%, transparent 50%)`
-                      }}
+          {
+            loading ? (
+              <div className={cn(
+                "flex items-center justify-center h-64",
+                brutalistClasses.border,
+                brutalistClasses.shadow,
+                brutalistClasses.bgWhite
+              )}>
+                <p className={cn(brutalistClasses.mono, "animate-pulse")}>LOADING EXPERIMENTS...</p>
+              </div>
+            ) : navigationData ? (
+              <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full">
+                  <BrutalistWrapper variant="card" shadow="sm" noPadding>
+                    <SearchBar
+                      onSearch={setSearchQuery}
+                      placeholder="SEARCH EXPERIMENTS"
+                      className="w-full"
                     />
-                  )}
-                </Card>
-              </Link>
-            ))}
-          </div>
+                  </BrutalistWrapper>
+                  
+                  <BrutalistWrapper variant="panel" shadow="md">
+                    <FilterPanel
+                      options={filters}
+                      availableCategories={['animations', 'data-visualization', 'interactions', 'effects', 'prototypes', 'algorithms']}
+                      availableTags={[]}
+                      availableTechStack={[]}
+                      onChange={setFilters}
+                      onReset={() => setFilters({})}
+                    />
+                  </BrutalistWrapper>
+                  
+                  <BrutalistWrapper variant="panel" shadow="lg" className="flex-grow min-h-[400px] md:min-h-[500px] lg:min-h-[600px] overflow-auto">
+                    <NavigationTree
+                      nodes={navigationData.nodes}
+                      searchQuery={searchQuery}
+                      experimentRouteMap={experimentRouteMap}
+                      className="h-full"
+                    />
+                  </BrutalistWrapper>
+              </div>
+            ) : (
+              <div className={cn(
+                "text-center py-8",
+                brutalistClasses.mono
+              )}>
+                Failed to load experiments
+              </div>
+            )
+          }
           </section>
 
           {/* CTA Section */}
