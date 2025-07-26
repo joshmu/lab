@@ -276,12 +276,11 @@ export function ExperimentExplorer({
       {/* Navigation Tree */}
       <NavigationTree
         nodes={filteredNavigationTree.nodes}
-        onExperimentSelect={handleExperimentSelect}
-        selectedExperimentId={selectedExperimentId}
         expandedNodes={expandedNodes}
         onNodeToggle={handleNodeToggle}
         searchQuery={searchQuery}
         filterOptions={filters}
+        experimentRouteMap={{}}
         className="flex-1"
       />
 
