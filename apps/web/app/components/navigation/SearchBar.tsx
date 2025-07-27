@@ -5,6 +5,8 @@ import { Search, X, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import type { SearchProps } from './types';
 
 /**
@@ -131,7 +133,7 @@ export function SearchBar({
     
     return parts.map((part, index) => 
       regex.test(part) ? (
-        <mark key={index} className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
+        <mark key={index} className="bg-yellow-200 dark:bg-yellow-900 text-foreground px-0.5 rounded">
           {part}
         </mark>
       ) : part
@@ -142,10 +144,10 @@ export function SearchBar({
     <div className={clsx('relative w-full', className)}>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
+          <Search className="h-4 w-4 text-muted-foreground" />
         </div>
         
-        <input
+        <Input
           ref={inputRef}
           type="text"
           value={query}
@@ -153,17 +155,7 @@ export function SearchBar({
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           placeholder={placeholder}
-          className={clsx(
-            'block w-full pl-10 pr-12 py-3 text-sm',
-            'bg-white dark:bg-black',
-            'border-4 border-black dark:border-white rounded-none',
-            'placeholder-gray-500 dark:placeholder-gray-400',
-            'text-gray-900 dark:text-gray-100',
-            'font-mono uppercase',
-            'focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:ring-offset-4',
-            'focus:ring-offset-white dark:focus:ring-offset-black',
-            'transition-all duration-200'
-          )}
+          className="pl-10 pr-10"
           aria-label="Search experiments"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
@@ -172,42 +164,43 @@ export function SearchBar({
           role="combobox"
         />
         
-        <div className="absolute inset-y-0 right-0 flex items-center">
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
           {isLoading && (
-            <Loader2 className="h-4 w-4 text-gray-400 animate-spin mr-3" />
+            <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
           )}
           
-          {query && (
-            <button
+          {query && !isLoading && (
+            <Button
               type="button"
               onClick={handleClear}
-              className="h-8 w-8 p-0 mr-1 hover:bg-yellow-400 hover:text-black rounded-none transition-colors duration-200"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
               aria-label="Clear search"
             >
-              <X className="h-4 w-4" />
-            </button>
+              <X className="h-3 w-3" />
+            </Button>
           )}
         </div>
       </div>
 
       {/* Search Results */}
       {isOpen && (
-        <div
+        <Card
           ref={resultsRef}
           className={clsx(
             'absolute z-50 w-full mt-2',
-            'bg-white dark:bg-black',
-            'border-4 border-black dark:border-white rounded-none',
-            'shadow-[4px_4px_0px_0px_rgb(0,0,0)] dark:shadow-[4px_4px_0px_0px_rgb(255,255,255)]',
             'max-h-80 overflow-y-auto'
           )}
           role="listbox"
           aria-label="Search results"
         >
           {results.length === 0 ? (
-            <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm font-mono uppercase">
-              {isLoading ? 'SEARCHING...' : 'NO EXPERIMENTS FOUND'}
-            </div>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {isLoading ? 'Searching...' : 'No experiments found'}
+              </p>
+            </CardContent>
           ) : (
             <div className="py-2">
               {results.map((experiment, index) => (
@@ -223,7 +216,7 @@ export function SearchBar({
               ))}
             </div>
           )}
-        </div>
+        </Card>
       )}
     </div>
   );
@@ -249,10 +242,10 @@ function SearchResult({
   highlightMatch,
   id,
 }: SearchResultProps) {
-  const difficultyColors: Record<string, string> = {
-    beginner: 'bg-green-400 text-black border-2 border-black rounded-none',
-    intermediate: 'bg-yellow-400 text-black border-2 border-black rounded-none',
-    advanced: 'bg-red-400 text-black border-2 border-black rounded-none',
+  const difficultyVariants: Record<string, 'default' | 'secondary' | 'destructive'> = {
+    beginner: 'default',
+    intermediate: 'secondary',
+    advanced: 'destructive',
   };
 
   return (
@@ -262,40 +255,41 @@ function SearchResult({
       onClick={onSelect}
       className={clsx(
         'w-full px-4 py-3 text-left',
-        'hover:bg-yellow-400 hover:text-black',
-        'focus:bg-yellow-400 focus:text-black',
+        'hover:bg-accent hover:text-accent-foreground',
+        'focus:bg-accent focus:text-accent-foreground',
         'focus:outline-none',
         'transition-colors duration-150',
-        isSelected && 'bg-yellow-400 text-black'
+        isSelected && 'bg-accent text-accent-foreground'
       )}
       role="option"
       aria-selected={isSelected}
     >
       <div className="space-y-2">
         <div className="flex items-start justify-between">
-          <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm line-clamp-1">
+          <h4 className="font-medium text-foreground text-sm line-clamp-1">
             {highlightMatch(experiment.title, searchQuery)}
           </h4>
           
           {experiment.featured && (
-            <Badge variant="default" className="text-xs px-2 py-1 bg-yellow-400 text-black border-2 border-black rounded-none ml-2 font-mono">
-              FEATURED
+            <Badge variant="default" className="text-xs ml-2">
+              Featured
             </Badge>
           )}
         </div>
         
-        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+        <p className="text-xs text-muted-foreground line-clamp-2">
           {highlightMatch(experiment.description, searchQuery)}
         </p>
         
         <div className="flex items-center space-x-2 text-xs">
           <Badge 
-            className={clsx('px-2 py-1', difficultyColors[experiment.difficulty])}
+            variant={difficultyVariants[experiment.difficulty]}
+            className="capitalize"
           >
             {experiment.difficulty}
           </Badge>
           
-          <span className="text-gray-500 dark:text-gray-400 capitalize">
+          <span className="text-muted-foreground capitalize text-xs">
             {experiment.category.replace('-', ' ')}
           </span>
           
@@ -305,9 +299,9 @@ function SearchResult({
                 <Badge 
                   key={tag} 
                   variant="outline" 
-                  className="text-xs px-1.5 py-0.5 border-2 border-black dark:border-white rounded-none font-mono"
+                  className="text-xs"
                 >
-                  {highlightMatch(tag.toUpperCase(), searchQuery)}
+                  {highlightMatch(tag, searchQuery)}
                 </Badge>
               ))}
               {experiment.tags.length > 2 && (

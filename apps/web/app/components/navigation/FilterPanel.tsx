@@ -5,6 +5,8 @@ import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { FilterProps } from './types';
 import type { FilterOptions } from '../../../lib/experiment-processing/types';
 
@@ -74,71 +76,64 @@ export function FilterPanel({
   return (
     <div className={clsx('relative', className)}>
       {/* Filter Toggle Button */}
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
-        className={clsx(
-          'flex items-center space-x-2 w-full',
-          'border-4 border-black dark:border-white rounded-none',
-          'p-3 font-mono uppercase font-bold',
-          'bg-white dark:bg-black',
-          'hover:bg-yellow-400 hover:text-black',
-          'transition-all duration-200',
-          isOpen && 'bg-yellow-400 text-black'
-        )}
+        variant={isOpen ? "secondary" : "outline"}
+        className="w-full justify-between"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`Filter experiments${activeFilterCount > 0 ? ` (${activeFilterCount} active)` : ''}`}
       >
-        <Filter className="w-4 h-4" />
-        <span>Filters</span>
-        {activeFilterCount > 0 && (
-          <Badge variant="default" className="ml-1 px-2 py-1 text-xs bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white rounded-none">
-            {activeFilterCount}
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4" />
+          <span>Filters</span>
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </div>
         {isOpen ? (
           <ChevronUp className="w-4 h-4" />
         ) : (
           <ChevronDown className="w-4 h-4" />
         )}
-      </button>
+      </Button>
 
       {/* Filter Panel */}
       {isOpen && (
-        <div className={clsx(
+        <Card className={clsx(
           'absolute z-50 mt-2 w-80',
-          'bg-white dark:bg-black',
-          'border-4 border-black dark:border-white rounded-none',
-          'shadow-[4px_4px_0px_0px_rgb(0,0,0)] dark:shadow-[4px_4px_0px_0px_rgb(255,255,255)]',
-          'p-4 space-y-4',
           'max-h-96 overflow-y-auto',
           // Position responsively
           'right-0 lg:left-0'
-        )}
-        style={{ pointerEvents: 'auto' }}>
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold uppercase text-gray-900 dark:text-gray-100 font-mono">
-              FILTER EXPERIMENTS
-            </h3>
-            <div className="flex items-center space-x-2">
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={onReset}
-                  className="text-xs px-2 py-1 border-2 border-black dark:border-white rounded-none font-mono uppercase hover:bg-yellow-400 hover:text-black transition-colors duration-200"
+        )}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Filter Experiments</CardTitle>
+              <div className="flex items-center gap-2">
+                {activeFilterCount > 0 && (
+                  <Button
+                    onClick={onReset}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Reset all
+                  </Button>
+                )}
+                <Button
+                  onClick={() => setIsOpen(false)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Close filters"
                 >
-                  RESET ALL
-                </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-yellow-400 hover:text-black transition-colors duration-200"
-                aria-label="Close filters"
-              >
-                <X className="w-4 h-4" />
-              </button>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
 
           {/* Categories Filter */}
           <FilterSection
@@ -150,7 +145,7 @@ export function FilterPanel({
               {availableCategories.map(category => (
                 <FilterCheckbox
                   key={category}
-                  label={category.replace('-', ' ').toUpperCase()}
+                  label={category.replace('-', ' ')}
                   checked={options.categories?.includes(category) || false}
                   onChange={() => toggleArrayValue('categories', category)}
                 />
@@ -168,7 +163,7 @@ export function FilterPanel({
               {(['beginner', 'intermediate', 'advanced'] as const).map(difficulty => (
                 <FilterCheckbox
                   key={difficulty}
-                  label={difficulty.toUpperCase()}
+                  label={difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                   checked={options.difficulty?.includes(difficulty) || false}
                   onChange={() => toggleArrayValue('difficulty', difficulty)}
                 />
@@ -240,7 +235,8 @@ export function FilterPanel({
               />
             </div>
           </FilterSection>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
@@ -258,19 +254,19 @@ interface FilterSectionProps {
 
 function FilterSection({ title, isExpanded, onToggle, children }: FilterSectionProps) {
   return (
-    <div className="border-t-2 border-black dark:border-white pt-4 first:border-t-0 first:pt-0">
+    <div className="border-t pt-4 first:border-t-0 first:pt-0">
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full text-left mb-3 focus:outline-none focus:ring-4 focus:ring-yellow-400 rounded-none"
+        className="flex items-center justify-between w-full text-left mb-3 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md p-1 -m-1"
         aria-expanded={isExpanded}
       >
-        <h4 className="font-bold uppercase text-gray-900 dark:text-gray-100 text-sm font-mono">
+        <h4 className="font-medium text-sm">
           {title}
         </h4>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-gray-500" />
+          <ChevronUp className="w-4 h-4 text-muted-foreground" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-500" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
         )}
       </button>
       
@@ -294,26 +290,13 @@ interface FilterCheckboxProps {
 
 function FilterCheckbox({ label, checked, onChange }: FilterCheckboxProps) {
   return (
-    <label className="flex items-center space-x-2 cursor-pointer group">
-      <input
-        type="checkbox"
+    <label className="flex items-center space-x-2 cursor-pointer">
+      <Checkbox
         checked={checked}
-        onChange={onChange}
-        className={clsx(
-          'w-4 h-4 rounded-none border-2 border-black dark:border-white',
-          'accent-yellow-400',
-          'focus:ring-4 focus:ring-yellow-400',
-          'focus:ring-offset-2',
-          'bg-white dark:bg-black',
-          'transition-colors duration-200'
-        )}
+        onCheckedChange={onChange}
+        className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
       />
-      <span className={clsx(
-        'text-sm select-none font-mono uppercase',
-        'text-gray-700 dark:text-gray-300',
-        'group-hover:text-black dark:group-hover:text-white',
-        'transition-colors duration-200'
-      )}>
+      <span className="text-sm select-none">
         {label}
       </span>
     </label>
