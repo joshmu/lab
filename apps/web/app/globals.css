@@ -192,6 +192,11 @@ a {
     display: inline-flex;
   }
   
+  /* Fix button link colors - ensure button styling takes precedence over anchor tag inherit */
+  a[data-slot="button"] {
+    color: var(--primary-foreground) !important;
+  }
+  
   /* Equal height grid items */
   .grid-equal-height {
     grid-auto-rows: 1fr;
