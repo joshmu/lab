@@ -1,15 +1,20 @@
 # Technical Specification: Brutalist Filetree Explorer for Homepage Integration
+
 **Project ID:** 20250726-172502
 **Created:** July 26, 2025
-**References:** 
+**References:**
+
 - `docs/prd/20250726-172502-filetree-explorer.md`
 - `docs/arch/20250726-172502-filetree-explorer.md`
 
 ## Executive Summary
+
 This technical specification details the implementation of a brutalist-themed filetree explorer integrated into Josh Mu's Lab homepage. The solution transforms existing navigation components with bold brutalist aesthetics while maintaining functionality and enhancing the visual impact. The implementation leverages CSS custom properties, Tailwind utility classes, and React component patterns to create a cohesive, maintainable design system.
 
 ## Technical Requirements
+
 ### Functional Specifications
+
 1. **Homepage Integration**
    - Replace hardcoded landing pages grid with dynamic filetree explorer
    - Maintain existing experiment links and routing
@@ -31,60 +36,67 @@ This technical specification details the implementation of a brutalist-themed fi
    - Update ExperimentCard presentation
 
 ### Non-Functional Specifications
+
 - Performance: Maintain <1s load time with brutalist styles
 - Accessibility: Ensure WCAG 2.1 AA compliance with high contrast
 - Responsiveness: Adapt brutalist design for mobile/tablet
 - Animation: Smooth transitions for shadows and transforms
 
 ## System Design
+
 ### Component Specifications
 
 #### 1. Brutalist Theme System
+
 ```typescript
 // apps/web/lib/theme/brutalist.ts
 export const brutalistTheme = {
   borders: {
-    width: '4px',
-    style: 'solid',
+    width: "4px",
+    style: "solid",
     color: {
-      default: 'border-black dark:border-white',
-      hover: 'hover:border-yellow-400',
-      active: 'border-yellow-400',
-    }
+      default: "border-black dark:border-white",
+      hover: "hover:border-yellow-400",
+      active: "border-yellow-400",
+    },
   },
   shadows: {
-    none: 'shadow-none',
-    small: 'shadow-[4px_4px_0px_0px_rgb(0,0,0)] dark:shadow-[4px_4px_0px_0px_rgb(255,255,255)]',
-    medium: 'shadow-[8px_8px_0px_0px_rgb(0,0,0)] dark:shadow-[8px_8px_0px_0px_rgb(255,255,255)]',
-    large: 'shadow-[12px_12px_0px_0px_rgb(0,0,0)] dark:shadow-[12px_12px_0px_0px_rgb(255,255,255)]',
+    none: "shadow-none",
+    small:
+      "shadow-[4px_4px_0px_0px_rgb(0,0,0)] dark:shadow-[4px_4px_0px_0px_rgb(255,255,255)]",
+    medium:
+      "shadow-[8px_8px_0px_0px_rgb(0,0,0)] dark:shadow-[8px_8px_0px_0px_rgb(255,255,255)]",
+    large:
+      "shadow-[12px_12px_0px_0px_rgb(0,0,0)] dark:shadow-[12px_12px_0px_0px_rgb(255,255,255)]",
     colored: {
-      purple: 'shadow-[8px_8px_0px_0px_rgb(147,51,234)]',
-      pink: 'shadow-[8px_8px_0px_0px_rgb(236,72,153)]',
-      cyan: 'shadow-[8px_8px_0px_0px_rgb(6,182,212)]',
-      red: 'shadow-[8px_8px_0px_0px_rgb(239,68,68)]',
-      orange: 'shadow-[8px_8px_0px_0px_rgb(249,115,22)]',
-      green: 'shadow-[8px_8px_0px_0px_rgb(34,197,94)]',
-      yellow: 'shadow-[8px_8px_0px_0px_rgb(250,204,21)]',
-    }
+      purple: "shadow-[8px_8px_0px_0px_rgb(147,51,234)]",
+      pink: "shadow-[8px_8px_0px_0px_rgb(236,72,153)]",
+      cyan: "shadow-[8px_8px_0px_0px_rgb(6,182,212)]",
+      red: "shadow-[8px_8px_0px_0px_rgb(239,68,68)]",
+      orange: "shadow-[8px_8px_0px_0px_rgb(249,115,22)]",
+      green: "shadow-[8px_8px_0px_0px_rgb(34,197,94)]",
+      yellow: "shadow-[8px_8px_0px_0px_rgb(250,204,21)]",
+    },
   },
   transforms: {
-    hover: 'hover:-translate-y-1 hover:translate-x-1',
-    active: 'active:translate-y-1 active:-translate-x-1',
+    hover: "hover:-translate-y-1 hover:translate-x-1",
+    active: "active:translate-y-1 active:-translate-x-1",
   },
   typography: {
-    heading: 'font-black uppercase tracking-tighter',
-    subheading: 'font-bold uppercase tracking-wide',
-    body: 'font-mono',
-    label: 'font-bold uppercase tracking-wider text-xs',
+    heading: "font-black uppercase tracking-tighter",
+    subheading: "font-bold uppercase tracking-wide",
+    body: "font-mono",
+    label: "font-bold uppercase tracking-wider text-xs",
   },
-  corners: 'rounded-none',
-  transitions: 'transition-all duration-200 ease-out',
+  corners: "rounded-none",
+  transitions: "transition-all duration-200 ease-out",
 } as const;
 
 export type BrutalistTheme = typeof brutalistTheme;
 ```
 
 #### 2. CSS Custom Properties
+
 ```css
 /* apps/web/app/globals.css - Add brutalist variables */
 @theme inline {
@@ -95,7 +107,7 @@ export type BrutalistTheme = typeof brutalistTheme;
   --brutalist-shadow-offset-large: 12px;
   --brutalist-transition-duration: 200ms;
   --brutalist-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Brutalist Colors */
   --brutalist-primary: oklch(0 0 0); /* Pure black */
   --brutalist-primary-inverse: oklch(1 0 0); /* Pure white */
@@ -111,70 +123,86 @@ export type BrutalistTheme = typeof brutalistTheme;
 }
 
 .brutalist-shadow {
-  box-shadow: var(--brutalist-shadow-offset) var(--brutalist-shadow-offset) 0px 0px currentColor;
+  box-shadow: var(--brutalist-shadow-offset) var(--brutalist-shadow-offset) 0px
+    0px currentColor;
 }
 
 .brutalist-shadow-hover {
-  transition: box-shadow var(--brutalist-transition-duration) var(--brutalist-transition-easing),
-              transform var(--brutalist-transition-duration) var(--brutalist-transition-easing);
+  transition:
+    box-shadow var(--brutalist-transition-duration)
+      var(--brutalist-transition-easing),
+    transform var(--brutalist-transition-duration)
+      var(--brutalist-transition-easing);
 }
 
 .brutalist-shadow-hover:hover {
-  transform: translate(calc(var(--brutalist-shadow-offset-small) / 4), calc(var(--brutalist-shadow-offset-small) / -4));
+  transform: translate(
+    calc(var(--brutalist-shadow-offset-small) / 4),
+    calc(var(--brutalist-shadow-offset-small) / -4)
+  );
 }
 ```
 
 ### API Design
+
 #### Brutalist Component Props Extension
+
 ```typescript
 // apps/web/lib/theme/types.ts
 export interface BrutalistProps {
   brutal?: boolean;
-  brutalVariant?: 'default' | 'accent' | 'danger' | 'success';
-  brutalSize?: 'small' | 'medium' | 'large';
+  brutalVariant?: "default" | "accent" | "danger" | "success";
+  brutalSize?: "small" | "medium" | "large";
   brutalShadow?: boolean;
   brutalBorder?: boolean;
 }
 
 // Extend existing component props
-export interface BrutalistNavigationTreeProps extends NavigationTreeProps, BrutalistProps {}
-export interface BrutalistSearchBarProps extends SearchBarProps, BrutalistProps {}
-export interface BrutalistFilterPanelProps extends FilterPanelProps, BrutalistProps {}
+export interface BrutalistNavigationTreeProps
+  extends NavigationTreeProps,
+    BrutalistProps {}
+export interface BrutalistSearchBarProps
+  extends SearchBarProps,
+    BrutalistProps {}
+export interface BrutalistFilterPanelProps
+  extends FilterPanelProps,
+    BrutalistProps {}
 ```
 
 ### Data Models
+
 ```typescript
 // apps/web/lib/theme/constants.ts
 export const BRUTALIST_CATEGORY_COLORS = {
   animations: {
-    bg: 'bg-purple-500',
-    border: 'border-purple-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(147,51,234)]',
+    bg: "bg-purple-500",
+    border: "border-purple-600",
+    shadow: "shadow-[8px_8px_0px_0px_rgb(147,51,234)]",
   },
-  'data-visualization': {
-    bg: 'bg-cyan-500',
-    border: 'border-cyan-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(6,182,212)]',
+  "data-visualization": {
+    bg: "bg-cyan-500",
+    border: "border-cyan-600",
+    shadow: "shadow-[8px_8px_0px_0px_rgb(6,182,212)]",
   },
   interactions: {
-    bg: 'bg-pink-500',
-    border: 'border-pink-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(236,72,153)]',
+    bg: "bg-pink-500",
+    border: "border-pink-600",
+    shadow: "shadow-[8px_8px_0px_0px_rgb(236,72,153)]",
   },
   effects: {
-    bg: 'bg-red-500',
-    border: 'border-red-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(239,68,68)]',
+    bg: "bg-red-500",
+    border: "border-red-600",
+    shadow: "shadow-[8px_8px_0px_0px_rgb(239,68,68)]",
   },
   prototypes: {
-    bg: 'bg-orange-500',
-    border: 'border-orange-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(249,115,22)]',
+    bg: "bg-orange-500",
+    border: "border-orange-600",
+    shadow: "shadow-[8px_8px_0px_0px_rgb(249,115,22)]",
   },
   algorithms: {
-    bg: 'bg-green-500',
-    border: 'border-green-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(34,197,94)]',
+    bg: "bg-green-500",
+    border: "border-green-600",
+    shadow: "shadow-[8px_8px_0px_0px_rgb(34,197,94)]",
   },
 } as const;
 
@@ -182,6 +210,7 @@ export type BrutalistCategoryColor = keyof typeof BRUTALIST_CATEGORY_COLORS;
 ```
 
 ### Integration Points
+
 ```typescript
 // apps/web/app/components/navigation/BrutalistNavigationTree.tsx
 import { NavigationTree } from './NavigationTree';
@@ -190,7 +219,7 @@ import { cn } from '@/lib/utils';
 
 export function BrutalistNavigationTree(props: BrutalistNavigationTreeProps) {
   const { className, brutal = true, ...rest } = props;
-  
+
   return (
     <NavigationTree
       {...rest}
@@ -211,7 +240,9 @@ export function BrutalistNavigationTree(props: BrutalistNavigationTreeProps) {
 ```
 
 ## Implementation Details
+
 ### Technology Stack
+
 - **React 18**: Component implementation with hooks
 - **TypeScript 5.x**: Type-safe brutalist theme system
 - **Tailwind CSS v4.1.11**: Utility-first brutalist styles
@@ -219,6 +250,7 @@ export function BrutalistNavigationTree(props: BrutalistNavigationTreeProps) {
 - **clsx/cn**: Dynamic class composition
 
 ### Development Environment
+
 ```json
 // package.json additions
 {
@@ -231,6 +263,7 @@ export function BrutalistNavigationTree(props: BrutalistNavigationTreeProps) {
 ```
 
 ### Code Structure
+
 ```
 apps/web/
 ├── app/
@@ -261,7 +294,9 @@ apps/web/
 ```
 
 ### Patterns & Standards
+
 #### 1. Brutalist Component Wrapper Pattern
+
 ```typescript
 // lib/theme/utils.ts
 export function withBrutalistStyles<T extends React.ComponentType<any>>(
@@ -270,9 +305,9 @@ export function withBrutalistStyles<T extends React.ComponentType<any>>(
 ) {
   return React.forwardRef((props: React.ComponentProps<T> & BrutalistProps, ref) => {
     const { brutal = true, brutalVariant = 'default', className, ...rest } = props;
-    
+
     const brutalClasses = brutal ? generateBrutalistClasses(defaultStyles, brutalVariant) : '';
-    
+
     return (
       <Component
         ref={ref}
@@ -285,6 +320,7 @@ export function withBrutalistStyles<T extends React.ComponentType<any>>(
 ```
 
 #### 2. Brutalist Animation Patterns
+
 ```typescript
 // lib/theme/animations.ts
 export const brutalistAnimations = {
@@ -299,7 +335,7 @@ export const brutalistAnimations = {
         100% { transform: translate(0) }
       }
     `,
-    class: 'animate-[brutalist-glitch_0.3s_ease-in-out_infinite]',
+    class: "animate-[brutalist-glitch_0.3s_ease-in-out_infinite]",
   },
   slam: {
     keyframes: `
@@ -309,13 +345,15 @@ export const brutalistAnimations = {
         100% { transform: scale(1) rotate(0deg) }
       }
     `,
-    class: 'animate-[brutalist-slam_0.2s_ease-out]',
+    class: "animate-[brutalist-slam_0.2s_ease-out]",
   },
 };
 ```
 
 ## Testing Strategy
+
 ### Unit Testing
+
 ```typescript
 // __tests__/theme/brutalist.test.tsx
 import { render } from '@testing-library/react';
@@ -325,20 +363,21 @@ describe('BrutalistNavigationTree', () => {
   it('applies brutalist border styles', () => {
     const { container } = render(<BrutalistNavigationTree nodes={[]} />);
     const tree = container.firstChild;
-    
+
     expect(tree).toHaveClass('border-4', 'border-black', 'rounded-none');
   });
-  
+
   it('applies brutalist shadow on hover', () => {
     const { container } = render(<BrutalistNavigationTree nodes={[]} />);
     const tree = container.firstChild;
-    
+
     expect(tree).toHaveClass('shadow-[8px_8px_0px_0px_rgb(0,0,0)]');
   });
 });
 ```
 
 ### Integration Testing
+
 ```typescript
 // __tests__/integration/homepage-brutalist.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -347,7 +386,7 @@ import Home from '@/app/page';
 describe('Homepage Brutalist Integration', () => {
   it('renders filetree explorer with brutalist theme', async () => {
     render(<Home />);
-    
+
     const navigator = await screen.findByRole('tree');
     expect(navigator).toHaveClass('border-4', 'shadow-[8px_8px_0px_0px_rgb(0,0,0)]');
   });
@@ -355,36 +394,41 @@ describe('Homepage Brutalist Integration', () => {
 ```
 
 ### End-to-End Testing
+
 ```typescript
 // e2e/brutalist-navigation.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('brutalist navigation interactions', async ({ page }) => {
-  await page.goto('/');
-  
+test("brutalist navigation interactions", async ({ page }) => {
+  await page.goto("/");
+
   // Test hover effects
   const card = page.locator('[data-testid="experiment-card"]').first();
   await card.hover();
-  
+
   // Verify shadow transformation
-  await expect(card).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 1, -1)');
+  await expect(card).toHaveCSS("transform", "matrix(1, 0, 0, 1, 1, -1)");
 });
 ```
 
 ## Quality Requirements
+
 ### Performance Criteria
+
 - CSS bundle size increase: <5KB gzipped
 - Animation frame rate: 60fps minimum
 - Shadow rendering: GPU-accelerated via `will-change`
 - Initial paint: No blocking styles
 
 ### Security Implementation
+
 - Sanitize all dynamic class names
 - Validate color inputs for theme customization
 - CSP headers for inline styles
 - XSS prevention in theme utilities
 
 ### Error Handling
+
 ```typescript
 // lib/theme/error-boundary.tsx
 export class BrutalistThemeErrorBoundary extends React.Component {
@@ -392,7 +436,7 @@ export class BrutalistThemeErrorBoundary extends React.Component {
     console.error('Brutalist theme error:', error);
     // Fallback to default styles
   }
-  
+
   render() {
     if (this.state.hasError) {
       return <div className="border-2 border-red-500 p-4">Theme Error</div>;
@@ -403,14 +447,15 @@ export class BrutalistThemeErrorBoundary extends React.Component {
 ```
 
 ### Logging & Monitoring
+
 ```typescript
 // lib/theme/telemetry.ts
 export function trackBrutalistInteraction(component: string, action: string) {
-  if (typeof window !== 'undefined' && window.analytics) {
-    window.analytics.track('brutalist_interaction', {
+  if (typeof window !== "undefined" && window.analytics) {
+    window.analytics.track("brutalist_interaction", {
       component,
       action,
-      theme: 'brutalist',
+      theme: "brutalist",
       timestamp: new Date().toISOString(),
     });
   }
@@ -418,6 +463,7 @@ export function trackBrutalistInteraction(component: string, action: string) {
 ```
 
 ## Development Tasks
+
 1. **Theme System Setup** (4 hours)
    - Create brutalist theme constants and types
    - Implement CSS custom properties
@@ -455,26 +501,27 @@ export function trackBrutalistInteraction(component: string, action: string) {
    - Profile and optimize animations
 
 ## Implementation Risks
+
 ### Technical Risks
+
 1. **Performance Impact**: Heavy shadows might affect rendering
    - Mitigation: Use CSS containment and GPU acceleration
-   
 2. **Accessibility Concerns**: High contrast might be jarring
    - Mitigation: Provide theme toggle option
-   
 3. **Mobile Experience**: Bold borders consume space
    - Mitigation: Responsive border widths
 
 ### Design Risks
+
 1. **Visual Overwhelm**: Too many brutal elements
    - Mitigation: Strategic use of brutalist accents
-   
 2. **Brand Consistency**: Departure from current aesthetic
    - Mitigation: Gradual rollout with A/B testing
 
 ## Code Examples
 
 ### 1. Brutalist Navigation Tree Implementation
+
 ```typescript
 // app/components/navigation/brutalist/BrutalistNavigationTree.tsx
 'use client';
@@ -497,7 +544,7 @@ export function BrutalistNavigationTree({
   ...props
 }: BrutalistNavigationTreeProps) {
   const shadowClass = brutalShadow ? brutalistTheme.shadows[brutalSize] : '';
-  
+
   return (
     <div
       className={cn(
@@ -537,6 +584,7 @@ export function BrutalistNavigationTree({
 ```
 
 ### 2. Brutalist Search Bar
+
 ```typescript
 // app/components/navigation/brutalist/BrutalistSearchBar.tsx
 'use client';
@@ -556,7 +604,7 @@ export function BrutalistSearchBar({
   ...props
 }: BrutalistSearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
-  
+
   return (
     <div
       className={cn(
@@ -609,6 +657,7 @@ export function BrutalistSearchBar({
 ```
 
 ### 3. Homepage Integration
+
 ```typescript
 // app/page.tsx (updated sections)
 import { BrutalistNavigationTree } from '@/components/navigation/brutalist';
@@ -619,14 +668,14 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFiletree, setShowFiletree] = useState(true);
   const [selectedExperiment, setSelectedExperiment] = useState<ExperimentMetadata | null>(null);
-  
+
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
       <div className="min-h-screen flex flex-col">
         {/* Hero Section - Keep existing */}
         <main className="flex-1 container mx-auto px-6 py-12 md:py-20 max-w-7xl">
           {/* ... existing hero content ... */}
-          
+
           {/* New Brutalist Filetree Section */}
           <section className="mb-16">
             <div className="flex items-center justify-between mb-8">
@@ -652,7 +701,7 @@ export default function Home() {
                 {showFiletree ? 'GRID VIEW' : 'TREE VIEW'}
               </Button>
             </div>
-            
+
             {showFiletree ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1 space-y-6">
@@ -718,82 +767,77 @@ export default function Home() {
 ```
 
 ### 4. Brutalist Utility Functions
+
 ```typescript
 // lib/theme/utils.ts
 export function generateBrutalistClasses(
   config: BrutalistStyleConfig,
-  variant: string = 'default'
+  variant: string = "default",
 ): string {
-  const classes = [
-    brutalistTheme.corners,
-    brutalistTheme.transitions,
-  ];
-  
+  const classes = [brutalistTheme.corners, brutalistTheme.transitions];
+
   if (config.border) {
     classes.push(
       brutalistTheme.borders.width,
-      brutalistTheme.borders.color[variant] || brutalistTheme.borders.color.default
+      brutalistTheme.borders.color[variant] ||
+        brutalistTheme.borders.color.default,
     );
   }
-  
+
   if (config.shadow) {
-    classes.push(
-      brutalistTheme.shadows[config.shadowSize || 'medium']
-    );
+    classes.push(brutalistTheme.shadows[config.shadowSize || "medium"]);
   }
-  
+
   if (config.interactive) {
-    classes.push(
-      brutalistTheme.transforms.hover,
-      'cursor-pointer'
-    );
+    classes.push(brutalistTheme.transforms.hover, "cursor-pointer");
   }
-  
+
   if (config.typography) {
-    classes.push(
-      brutalistTheme.typography[config.typography]
-    );
+    classes.push(brutalistTheme.typography[config.typography]);
   }
-  
+
   return cn(...classes);
 }
 
 export function getBrutalistCategoryStyle(category: string) {
-  return BRUTALIST_CATEGORY_COLORS[category as BrutalistCategoryColor] || {
-    bg: 'bg-gray-500',
-    border: 'border-gray-600',
-    shadow: 'shadow-[8px_8px_0px_0px_rgb(107,114,128)]',
-  };
+  return (
+    BRUTALIST_CATEGORY_COLORS[category as BrutalistCategoryColor] || {
+      bg: "bg-gray-500",
+      border: "border-gray-600",
+      shadow: "shadow-[8px_8px_0px_0px_rgb(107,114,128)]",
+    }
+  );
 }
 ```
 
 ### 5. Tailwind Configuration Updates
+
 ```javascript
 // tailwind.config.js updates
 module.exports = {
   theme: {
     extend: {
       animation: {
-        'brutalist-glitch': 'brutalist-glitch 0.3s ease-in-out infinite',
-        'brutalist-slam': 'brutalist-slam 0.2s ease-out',
+        "brutalist-glitch": "brutalist-glitch 0.3s ease-in-out infinite",
+        "brutalist-slam": "brutalist-slam 0.2s ease-out",
       },
       boxShadow: {
-        'brutal-sm': '4px 4px 0px 0px rgb(0,0,0)',
-        'brutal-md': '8px 8px 0px 0px rgb(0,0,0)',
-        'brutal-lg': '12px 12px 0px 0px rgb(0,0,0)',
-        'brutal-colored': '8px 8px 0px 0px var(--shadow-color)',
+        "brutal-sm": "4px 4px 0px 0px rgb(0,0,0)",
+        "brutal-md": "8px 8px 0px 0px rgb(0,0,0)",
+        "brutal-lg": "12px 12px 0px 0px rgb(0,0,0)",
+        "brutal-colored": "8px 8px 0px 0px var(--shadow-color)",
       },
     },
   },
   safelist: [
     // Brutalist shadow colors
-    'shadow-[8px_8px_0px_0px_rgb(147,51,234)]',
-    'shadow-[8px_8px_0px_0px_rgb(236,72,153)]',
-    'shadow-[8px_8px_0px_0px_rgb(6,182,212)]',
-    'shadow-[8px_8px_0px_0px_rgb(239,68,68)]',
-    'shadow-[8px_8px_0px_0px_rgb(249,115,22)]',
-    'shadow-[8px_8px_0px_0px_rgb(34,197,94)]',
-    'shadow-[8px_8px_0px_0px_rgb(250,204,21)]',
+    "shadow-[8px_8px_0px_0px_rgb(147,51,234)]",
+    "shadow-[8px_8px_0px_0px_rgb(236,72,153)]",
+    "shadow-[8px_8px_0px_0px_rgb(6,182,212)]",
+    "shadow-[8px_8px_0px_0px_rgb(239,68,68)]",
+    "shadow-[8px_8px_0px_0px_rgb(249,115,22)]",
+    "shadow-[8px_8px_0px_0px_rgb(34,197,94)]",
+    "shadow-[8px_8px_0px_0px_rgb(250,204,21)]",
   ],
 };
 ```

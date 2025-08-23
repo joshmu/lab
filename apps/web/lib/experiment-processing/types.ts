@@ -1,15 +1,24 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Difficulty levels for experiments
  */
-export const ExperimentDifficulty = z.enum(['beginner', 'intermediate', 'advanced']);
+export const ExperimentDifficulty = z.enum([
+  "beginner",
+  "intermediate",
+  "advanced",
+]);
 export type ExperimentDifficulty = z.infer<typeof ExperimentDifficulty>;
 
 /**
  * Status levels for experiments
  */
-export const ExperimentStatus = z.enum(['draft', 'published', 'archived', 'featured']);
+export const ExperimentStatus = z.enum([
+  "draft",
+  "published",
+  "archived",
+  "featured",
+]);
 export type ExperimentStatus = z.infer<typeof ExperimentStatus>;
 
 /**
@@ -18,19 +27,28 @@ export type ExperimentStatus = z.infer<typeof ExperimentStatus>;
 export const TechStackItem = z.object({
   name: z.string().min(1),
   version: z.string().optional(),
-  category: z.enum(['framework', 'library', 'tool', 'language', 'database', 'service']),
+  category: z.enum([
+    "framework",
+    "library",
+    "tool",
+    "language",
+    "database",
+    "service",
+  ]),
 });
 export type TechStackItem = z.infer<typeof TechStackItem>;
 
 /**
  * Social media links
  */
-export const SocialLinks = z.object({
-  github: z.string().url().optional(),
-  demo: z.string().url().optional(),
-  article: z.string().url().optional(),
-  video: z.string().url().optional(),
-}).optional();
+export const SocialLinks = z
+  .object({
+    github: z.string().url().optional(),
+    demo: z.string().url().optional(),
+    article: z.string().url().optional(),
+    video: z.string().url().optional(),
+  })
+  .optional();
 export type SocialLinks = z.infer<typeof SocialLinks>;
 
 /**
@@ -41,30 +59,39 @@ export const ExperimentMetadata = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(100),
   description: z.string().min(10).max(500),
-  slug: z.string().regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
-  
+  slug: z
+    .string()
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug must contain only lowercase letters, numbers, and hyphens",
+    ),
+
   // Categorization
   category: z.string().min(1),
   tags: z.array(z.string().min(1)).min(1).max(10),
   difficulty: ExperimentDifficulty,
   status: ExperimentStatus,
-  
+
   // Technical Details
   techStack: z.array(TechStackItem).min(1),
-  estimatedTime: z.string().regex(/^\d+\s*(min|hour|day)s?$/, 'Format: "30 mins", "2 hours", "1 day"'),
-  
+  estimatedTime: z
+    .string()
+    .regex(/^\d+\s*(min|hour|day)s?$/, 'Format: "30 mins", "2 hours", "1 day"'),
+
   // Metadata
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Must follow semantic versioning (e.g., 1.0.0)'),
-  
+  version: z
+    .string()
+    .regex(/^\d+\.\d+\.\d+$/, "Must follow semantic versioning (e.g., 1.0.0)"),
+
   // Optional Fields
-  author: z.string().default('Josh Mu'),
+  author: z.string().default("Josh Mu"),
   featured: z.boolean().default(false),
   socialLinks: SocialLinks,
   prerequisites: z.array(z.string()).optional(),
   learningObjectives: z.array(z.string()).optional(),
-  
+
   // SEO & Discovery
   keywords: z.array(z.string()).max(20).optional(),
   excerpt: z.string().max(200).optional(),
@@ -77,7 +104,7 @@ export type ExperimentMetadata = z.infer<typeof ExperimentMetadata>;
 export interface NavigationNode {
   id: string;
   name: string;
-  type: 'category' | 'experiment';
+  type: "category" | "experiment";
   path: string;
   children?: NavigationNode[];
   metadata?: ExperimentMetadata;
@@ -90,7 +117,7 @@ export interface NavigationNode {
 export const NavigationNodeSchema: z.ZodType<NavigationNode> = z.object({
   id: z.string(),
   name: z.string(),
-  type: z.enum(['category', 'experiment']),
+  type: z.enum(["category", "experiment"]),
   path: z.string(),
   children: z.array(z.lazy(() => NavigationNodeSchema)).optional(),
   metadata: ExperimentMetadata.optional(),
@@ -152,13 +179,19 @@ export type FilterOptions = z.infer<typeof FilterOptions>;
 /**
  * Sort options for experiments
  */
-export const SortOptions = z.enum(['title', 'createdAt', 'updatedAt', 'difficulty', 'category']);
+export const SortOptions = z.enum([
+  "title",
+  "createdAt",
+  "updatedAt",
+  "difficulty",
+  "category",
+]);
 export type SortOptions = z.infer<typeof SortOptions>;
 
 /**
  * Sort direction
  */
-export const SortDirection = z.enum(['asc', 'desc']);
+export const SortDirection = z.enum(["asc", "desc"]);
 export type SortDirection = z.infer<typeof SortDirection>;
 
 /**
@@ -176,8 +209,8 @@ export type PaginationOptions = z.infer<typeof PaginationOptions>;
 export const ExperimentQueryOptions = z.object({
   search: z.string().optional(),
   filters: FilterOptions.optional(),
-  sort: SortOptions.default('updatedAt'),
-  direction: SortDirection.default('desc'),
+  sort: SortOptions.default("updatedAt"),
+  direction: SortDirection.default("desc"),
   pagination: PaginationOptions.optional(),
 });
 export type ExperimentQueryOptions = z.infer<typeof ExperimentQueryOptions>;
@@ -201,16 +234,20 @@ export type ExperimentQueryResult = z.infer<typeof ExperimentQueryResult>;
 export const ProcessingResult = z.object({
   success: z.boolean(),
   processedCount: z.number(),
-  errors: z.array(z.object({
-    file: z.string(),
-    error: z.string(),
-    details: z.string().optional(),
-  })),
-  warnings: z.array(z.object({
-    file: z.string(),
-    warning: z.string(),
-    details: z.string().optional(),
-  })),
+  errors: z.array(
+    z.object({
+      file: z.string(),
+      error: z.string(),
+      details: z.string().optional(),
+    }),
+  ),
+  warnings: z.array(
+    z.object({
+      file: z.string(),
+      warning: z.string(),
+      details: z.string().optional(),
+    }),
+  ),
   navigationTree: NavigationTree,
   searchIndex: SearchIndex,
   processingTime: z.number(), // milliseconds
@@ -220,7 +257,9 @@ export type ProcessingResult = z.infer<typeof ProcessingResult>;
 /**
  * Runtime validation helpers
  */
-export const validateExperimentMetadata = (data: unknown): ExperimentMetadata => {
+export const validateExperimentMetadata = (
+  data: unknown,
+): ExperimentMetadata => {
   return ExperimentMetadata.parse(data);
 };
 
@@ -235,7 +274,9 @@ export const validateSearchIndex = (data: unknown): SearchIndex => {
 /**
  * Type guards for runtime checks
  */
-export const isExperimentMetadata = (data: unknown): data is ExperimentMetadata => {
+export const isExperimentMetadata = (
+  data: unknown,
+): data is ExperimentMetadata => {
   return ExperimentMetadata.safeParse(data).success;
 };
 
@@ -246,10 +287,11 @@ export const isNavigationNode = (data: unknown): data is NavigationNode => {
 /**
  * Default values and constants
  */
-export const DEFAULT_EXPERIMENT_STATUS: ExperimentStatus = 'draft';
-export const DEFAULT_EXPERIMENT_DIFFICULTY: ExperimentDifficulty = 'intermediate';
-export const DEFAULT_AUTHOR = 'Josh Mu';
-export const DEFAULT_VERSION = '1.0.0';
+export const DEFAULT_EXPERIMENT_STATUS: ExperimentStatus = "draft";
+export const DEFAULT_EXPERIMENT_DIFFICULTY: ExperimentDifficulty =
+  "intermediate";
+export const DEFAULT_AUTHOR = "Josh Mu";
+export const DEFAULT_VERSION = "1.0.0";
 
 /**
  * Validation error types
@@ -259,10 +301,10 @@ export class ExperimentValidationError extends Error {
     message: string,
     public readonly field: string,
     public readonly value: unknown,
-    public readonly zodError?: z.ZodError
+    public readonly zodError?: z.ZodError,
   ) {
     super(message);
-    this.name = 'ExperimentValidationError';
+    this.name = "ExperimentValidationError";
   }
 }
 
@@ -273,9 +315,9 @@ export class ExperimentProcessingError extends Error {
   constructor(
     message: string,
     public readonly file: string,
-    public readonly cause?: Error
+    public readonly cause?: Error,
   ) {
     super(message);
-    this.name = 'ExperimentProcessingError';
+    this.name = "ExperimentProcessingError";
   }
 }

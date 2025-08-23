@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ArrowRight, Home, Activity } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ArrowRight, Home, Activity } from "lucide-react";
 
 interface Blob {
   x: number;
@@ -29,7 +29,7 @@ export default function Landing2() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -41,7 +41,7 @@ export default function Landing2() {
     const initBlobs = () => {
       blobsRef.current = [];
       const blobCount = 8;
-      
+
       for (let i = 0; i < blobCount; i++) {
         blobsRef.current.push({
           x: Math.random() * canvas.width,
@@ -72,21 +72,21 @@ export default function Landing2() {
         const distance = Math.sqrt(dx * dx + dy * dy);
         sum += (blob.radius * blob.radius) / (distance * distance);
       });
-      
+
       // Add mouse influence
       const mouseDx = x - mouseRef.current.x;
       const mouseDy = y - mouseRef.current.y;
       const mouseDistance = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy);
       sum += 10000 / (mouseDistance * mouseDistance);
-      
+
       return sum;
     };
 
     const animate = () => {
       timeRef.current += 0.01;
-      
+
       // Clear canvas
-      ctx.fillStyle = 'rgba(20, 20, 20, 1)';
+      ctx.fillStyle = "rgba(20, 20, 20, 1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Update blobs
@@ -96,17 +96,17 @@ export default function Landing2() {
         const dy = blob.targetY - blob.y;
         blob.x += dx * 0.02;
         blob.y += dy * 0.02;
-        
+
         // If close to target, pick new target
         if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
           blob.targetX = Math.random() * canvas.width;
           blob.targetY = Math.random() * canvas.height;
         }
-        
+
         // Organic movement
         blob.x += Math.sin(timeRef.current + index) * 2;
         blob.y += Math.cos(timeRef.current + index * 0.8) * 2;
-        
+
         // Mouse repulsion
         const mouseDx = blob.x - mouseRef.current.x;
         const mouseDy = blob.y - mouseRef.current.y;
@@ -120,16 +120,20 @@ export default function Landing2() {
 
       // Render metaballs
       const step = 4; // Sampling step for performance
-      
+
       for (let x = 0; x < canvas.width; x += step) {
         for (let y = 0; y < canvas.height; y += step) {
           const value = metaball(x, y);
-          
+
           if (value > 1) {
             // Calculate color based on position and time
-            const hue = (x / canvas.width * 60 + y / canvas.height * 60 + timeRef.current * 20) % 360;
+            const hue =
+              ((x / canvas.width) * 60 +
+                (y / canvas.height) * 60 +
+                timeRef.current * 20) %
+              360;
             const color = `hsl(${hue}, 70%, ${50 + value * 10}%)`;
-            
+
             // Convert HSL to RGB
             ctx.fillStyle = color;
             ctx.fillRect(x, y, step, step);
@@ -138,25 +142,25 @@ export default function Landing2() {
       }
 
       // Add glow effect
-      ctx.filter = 'blur(20px)';
-      ctx.globalCompositeOperation = 'screen';
+      ctx.filter = "blur(20px)";
+      ctx.globalCompositeOperation = "screen";
       ctx.drawImage(canvas, 0, 0);
-      ctx.filter = 'none';
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.filter = "none";
+      ctx.globalCompositeOperation = "source-over";
 
       animationRef.current = requestAnimationFrame(animate);
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', handleMouseMove);
-    
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+
     animate();
     setIsLoaded(true);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -164,9 +168,11 @@ export default function Landing2() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-gray-900">
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-2000 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-2000 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="text-center z-10 p-8 max-w-4xl">
           <h1 className="relative space-y-2 mb-4">
             <span className="block text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 animate-bounce">
@@ -179,8 +185,8 @@ export default function Landing2() {
           <p className="text-xl md:text-2xl text-gray-300 font-light tracking-wide mb-6">
             Morphing realities in perpetual motion
           </p>
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="border-2 border-purple-500/50 bg-purple-500/10 text-purple-300 px-4 py-2 text-sm font-medium mb-8"
           >
             <Activity className="mr-2 h-4 w-4 animate-pulse" />

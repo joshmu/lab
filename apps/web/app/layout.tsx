@@ -13,7 +13,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "lab.joshmu.dev",
-  description: "Josh Mu's experimental lab for testing modern web development patterns",
+  description:
+    "Josh Mu's experimental lab for testing modern web development patterns",
 };
 
 export default function RootLayout({

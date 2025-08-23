@@ -1,13 +1,13 @@
-import { z } from 'zod';
-import { 
-  ExperimentMetadata, 
-  NavigationTree, 
+import { z } from "zod";
+import {
+  ExperimentMetadata,
+  NavigationTree,
   SearchIndex,
   NavigationNode,
   NavigationNodeSchema,
   ExperimentValidationError,
-  ExperimentProcessingError 
-} from './types';
+  ExperimentProcessingError,
+} from "./types";
 
 /**
  * Validation result types
@@ -52,10 +52,12 @@ export const BatchValidationResult = z.object({
   totalFiles: z.number(),
   validFiles: z.number(),
   invalidFiles: z.number(),
-  results: z.array(z.object({
-    file: z.string(),
-    result: z.custom<ValidationResult<ExperimentMetadata>>(),
-  })),
+  results: z.array(
+    z.object({
+      file: z.string(),
+      result: z.custom<ValidationResult<ExperimentMetadata>>(),
+    }),
+  ),
   processingTime: z.number(),
 });
 export type BatchValidationResult = z.infer<typeof BatchValidationResult>;
@@ -64,8 +66,8 @@ export type BatchValidationResult = z.infer<typeof BatchValidationResult>;
  * Validates experiment metadata with comprehensive error reporting
  */
 export function validateExperimentMetadata(
-  data: unknown, 
-  file?: string
+  data: unknown,
+  file?: string,
 ): ValidationResult<ExperimentMetadata> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
@@ -73,14 +75,20 @@ export function validateExperimentMetadata(
   try {
     // First, validate the basic structure
     const result = ExperimentMetadata.safeParse(data);
-    
+
     if (!result.success) {
       // Parse Zod errors into more user-friendly format
-      result.error.issues.forEach(issue => {
+      result.error.issues.forEach((issue) => {
         errors.push({
-          field: issue.path.join('.'),
+          field: issue.path.join("."),
           message: issue.message,
-          value: getValueAtPath(data, issue.path.filter((key): key is string | number => typeof key === 'string' || typeof key === 'number')),
+          value: getValueAtPath(
+            data,
+            issue.path.filter(
+              (key): key is string | number =>
+                typeof key === "string" || typeof key === "number",
+            ),
+          ),
           code: issue.code,
         });
       });
@@ -105,10 +113,11 @@ export function validateExperimentMetadata(
     };
   } catch (error) {
     errors.push({
-      field: 'root',
-      message: error instanceof Error ? error.message : 'Unknown validation error',
+      field: "root",
+      message:
+        error instanceof Error ? error.message : "Unknown validation error",
       value: data,
-      code: 'VALIDATION_ERROR',
+      code: "VALIDATION_ERROR",
     });
 
     return {
@@ -125,14 +134,14 @@ export function validateExperimentMetadata(
 function validateExperimentRules(
   experiment: ExperimentMetadata,
   errors: ValidationError[],
-  warnings: ValidationWarning[]
+  warnings: ValidationWarning[],
 ): void {
   // Check for duplicate slugs (this would be handled at a higher level)
   // But we can validate slug format more strictly
   if (experiment.slug.length < 3) {
     warnings.push({
-      field: 'slug',
-      message: 'Slug is very short, consider making it more descriptive',
+      field: "slug",
+      message: "Slug is very short, consider making it more descriptive",
       value: experiment.slug,
       suggestion: `${experiment.slug}-experiment`,
     });
@@ -141,13 +150,13 @@ function validateExperimentRules(
   // Validate dates
   const createdAt = new Date(experiment.createdAt);
   const updatedAt = new Date(experiment.updatedAt);
-  
+
   if (updatedAt < createdAt) {
     errors.push({
-      field: 'updatedAt',
-      message: 'Updated date cannot be before created date',
+      field: "updatedAt",
+      message: "Updated date cannot be before created date",
       value: experiment.updatedAt,
-      code: 'INVALID_DATE_ORDER',
+      code: "INVALID_DATE_ORDER",
     });
   }
 
@@ -155,8 +164,8 @@ function validateExperimentRules(
   const now = new Date();
   if (createdAt > now) {
     warnings.push({
-      field: 'createdAt',
-      message: 'Created date is in the future',
+      field: "createdAt",
+      message: "Created date is in the future",
       value: experiment.createdAt,
     });
   }
@@ -164,32 +173,34 @@ function validateExperimentRules(
   // Tech stack validation
   if (experiment.techStack.length > 10) {
     warnings.push({
-      field: 'techStack',
-      message: 'Too many tech stack items, consider grouping or reducing',
+      field: "techStack",
+      message: "Too many tech stack items, consider grouping or reducing",
       value: experiment.techStack.length,
-      suggestion: 'Limit to 5-8 main technologies',
+      suggestion: "Limit to 5-8 main technologies",
     });
   }
 
   // Check for common tech stack duplicates
-  const techNames = experiment.techStack.map(tech => tech.name.toLowerCase());
-  const duplicates = techNames.filter((name, index) => techNames.indexOf(name) !== index);
+  const techNames = experiment.techStack.map((tech) => tech.name.toLowerCase());
+  const duplicates = techNames.filter(
+    (name, index) => techNames.indexOf(name) !== index,
+  );
   if (duplicates.length > 0) {
     errors.push({
-      field: 'techStack',
-      message: 'Duplicate tech stack items found',
+      field: "techStack",
+      message: "Duplicate tech stack items found",
       value: duplicates,
-      code: 'DUPLICATE_TECH_STACK',
+      code: "DUPLICATE_TECH_STACK",
     });
   }
 
   // Tag validation
   if (experiment.tags.length > 8) {
     warnings.push({
-      field: 'tags',
-      message: 'Too many tags, consider reducing for better organization',
+      field: "tags",
+      message: "Too many tags, consider reducing for better organization",
       value: experiment.tags.length,
-      suggestion: 'Limit to 5-6 most relevant tags',
+      suggestion: "Limit to 5-6 most relevant tags",
     });
   }
 
@@ -198,18 +209,18 @@ function validateExperimentRules(
     if (tag !== tag.toLowerCase()) {
       warnings.push({
         field: `tags[${index}]`,
-        message: 'Tag should be lowercase',
+        message: "Tag should be lowercase",
         value: tag,
         suggestion: tag.toLowerCase(),
       });
     }
-    
-    if (tag.includes(' ')) {
+
+    if (tag.includes(" ")) {
       warnings.push({
         field: `tags[${index}]`,
-        message: 'Tag should not contain spaces, use hyphens instead',
+        message: "Tag should not contain spaces, use hyphens instead",
         value: tag,
-        suggestion: tag.replace(/ /g, '-'),
+        suggestion: tag.replace(/ /g, "-"),
       });
     }
   });
@@ -220,9 +231,9 @@ function validateExperimentRules(
       if (url && !isValidUrl(url)) {
         errors.push({
           field: `socialLinks.${key}`,
-          message: 'Invalid URL format',
+          message: "Invalid URL format",
           value: url,
-          code: 'INVALID_URL',
+          code: "INVALID_URL",
         });
       }
     });
@@ -231,20 +242,23 @@ function validateExperimentRules(
   // Prerequisites validation
   if (experiment.prerequisites && experiment.prerequisites.length > 5) {
     warnings.push({
-      field: 'prerequisites',
-      message: 'Too many prerequisites, consider grouping or reducing',
+      field: "prerequisites",
+      message: "Too many prerequisites, consider grouping or reducing",
       value: experiment.prerequisites.length,
-      suggestion: 'Group related prerequisites or limit to essential ones',
+      suggestion: "Group related prerequisites or limit to essential ones",
     });
   }
 
   // Learning objectives validation
-  if (experiment.learningObjectives && experiment.learningObjectives.length > 8) {
+  if (
+    experiment.learningObjectives &&
+    experiment.learningObjectives.length > 8
+  ) {
     warnings.push({
-      field: 'learningObjectives',
-      message: 'Too many learning objectives, consider consolidating',
+      field: "learningObjectives",
+      message: "Too many learning objectives, consider consolidating",
       value: experiment.learningObjectives.length,
-      suggestion: 'Focus on 3-5 key learning outcomes',
+      suggestion: "Focus on 3-5 key learning outcomes",
     });
   }
 }
@@ -253,17 +267,20 @@ function validateExperimentRules(
  * Validates multiple experiments in batch
  */
 export function validateExperimentsBatch(
-  experiments: Array<{ file: string; data: unknown }>
+  experiments: Array<{ file: string; data: unknown }>,
 ): BatchValidationResult {
   const startTime = Date.now();
-  const results: Array<{ file: string; result: ValidationResult<ExperimentMetadata> }> = [];
+  const results: Array<{
+    file: string;
+    result: ValidationResult<ExperimentMetadata>;
+  }> = [];
 
   for (const { file, data } of experiments) {
     const result = validateExperimentMetadata(data, file);
     results.push({ file, result });
   }
 
-  const validFiles = results.filter(r => r.result.success).length;
+  const validFiles = results.filter((r) => r.result.success).length;
   const processingTime = Date.now() - startTime;
 
   return {
@@ -278,19 +295,27 @@ export function validateExperimentsBatch(
 /**
  * Validates navigation tree structure
  */
-export function validateNavigationTree(data: unknown): ValidationResult<NavigationTree> {
+export function validateNavigationTree(
+  data: unknown,
+): ValidationResult<NavigationTree> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
   try {
     const result = NavigationTree.safeParse(data);
-    
+
     if (!result.success) {
-      result.error.issues.forEach(issue => {
+      result.error.issues.forEach((issue) => {
         errors.push({
-          field: issue.path.join('.'),
+          field: issue.path.join("."),
           message: issue.message,
-          value: getValueAtPath(data, issue.path.filter((key): key is string | number => typeof key === 'string' || typeof key === 'number')),
+          value: getValueAtPath(
+            data,
+            issue.path.filter(
+              (key): key is string | number =>
+                typeof key === "string" || typeof key === "number",
+            ),
+          ),
           code: issue.code,
         });
       });
@@ -315,10 +340,11 @@ export function validateNavigationTree(data: unknown): ValidationResult<Navigati
     };
   } catch (error) {
     errors.push({
-      field: 'root',
-      message: error instanceof Error ? error.message : 'Unknown validation error',
+      field: "root",
+      message:
+        error instanceof Error ? error.message : "Unknown validation error",
       value: data,
-      code: 'VALIDATION_ERROR',
+      code: "VALIDATION_ERROR",
     });
 
     return {
@@ -335,19 +361,19 @@ export function validateNavigationTree(data: unknown): ValidationResult<Navigati
 function validateNavigationTreeRules(
   tree: NavigationTree,
   errors: ValidationError[],
-  warnings: ValidationWarning[]
+  warnings: ValidationWarning[],
 ): void {
   // Check for duplicate node IDs
   const nodeIds = new Set<string>();
   const duplicateIds = new Set<string>();
 
-  function checkNodeIds(nodes: NavigationTree['nodes']): void {
-    nodes.forEach(node => {
+  function checkNodeIds(nodes: NavigationTree["nodes"]): void {
+    nodes.forEach((node) => {
       if (nodeIds.has(node.id)) {
         duplicateIds.add(node.id);
       }
       nodeIds.add(node.id);
-      
+
       if (node.children) {
         checkNodeIds(node.children);
       }
@@ -358,19 +384,25 @@ function validateNavigationTreeRules(
 
   if (duplicateIds.size > 0) {
     errors.push({
-      field: 'nodes',
-      message: 'Duplicate node IDs found',
+      field: "nodes",
+      message: "Duplicate node IDs found",
       value: Array.from(duplicateIds),
-      code: 'DUPLICATE_NODE_IDS',
+      code: "DUPLICATE_NODE_IDS",
     });
   }
 
   // Check tree depth
-  function getMaxDepth(nodes: NavigationTree['nodes'], currentDepth = 0): number {
+  function getMaxDepth(
+    nodes: NavigationTree["nodes"],
+    currentDepth = 0,
+  ): number {
     let maxDepth = currentDepth;
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       if (node.children) {
-        maxDepth = Math.max(maxDepth, getMaxDepth(node.children, currentDepth + 1));
+        maxDepth = Math.max(
+          maxDepth,
+          getMaxDepth(node.children, currentDepth + 1),
+        );
       }
     });
     return maxDepth;
@@ -379,10 +411,11 @@ function validateNavigationTreeRules(
   const maxDepth = getMaxDepth(tree.nodes);
   if (maxDepth > 5) {
     warnings.push({
-      field: 'nodes',
-      message: 'Navigation tree is very deep, consider flattening the structure',
+      field: "nodes",
+      message:
+        "Navigation tree is very deep, consider flattening the structure",
       value: maxDepth,
-      suggestion: 'Keep navigation depth under 4 levels for better UX',
+      suggestion: "Keep navigation depth under 4 levels for better UX",
     });
   }
 
@@ -390,10 +423,11 @@ function validateNavigationTreeRules(
   const actualExperimentCount = countExperiments(tree.nodes);
   if (actualExperimentCount !== tree.totalExperiments) {
     errors.push({
-      field: 'totalExperiments',
-      message: 'Total experiment count does not match actual experiments in tree',
+      field: "totalExperiments",
+      message:
+        "Total experiment count does not match actual experiments in tree",
       value: `Expected: ${tree.totalExperiments}, Actual: ${actualExperimentCount}`,
-      code: 'EXPERIMENT_COUNT_MISMATCH',
+      code: "EXPERIMENT_COUNT_MISMATCH",
     });
   }
 }
@@ -401,10 +435,10 @@ function validateNavigationTreeRules(
 /**
  * Count experiments in navigation tree
  */
-function countExperiments(nodes: NavigationTree['nodes']): number {
+function countExperiments(nodes: NavigationTree["nodes"]): number {
   let count = 0;
-  nodes.forEach(node => {
-    if (node.type === 'experiment') {
+  nodes.forEach((node) => {
+    if (node.type === "experiment") {
       count++;
     } else if (node.children) {
       count += countExperiments(node.children);
@@ -416,19 +450,27 @@ function countExperiments(nodes: NavigationTree['nodes']): number {
 /**
  * Validates search index structure
  */
-export function validateSearchIndex(data: unknown): ValidationResult<SearchIndex> {
+export function validateSearchIndex(
+  data: unknown,
+): ValidationResult<SearchIndex> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
   try {
     const result = SearchIndex.safeParse(data);
-    
+
     if (!result.success) {
-      result.error.issues.forEach(issue => {
+      result.error.issues.forEach((issue) => {
         errors.push({
-          field: issue.path.join('.'),
+          field: issue.path.join("."),
           message: issue.message,
-          value: getValueAtPath(data, issue.path.filter((key): key is string | number => typeof key === 'string' || typeof key === 'number')),
+          value: getValueAtPath(
+            data,
+            issue.path.filter(
+              (key): key is string | number =>
+                typeof key === "string" || typeof key === "number",
+            ),
+          ),
           code: issue.code,
         });
       });
@@ -445,22 +487,22 @@ export function validateSearchIndex(data: unknown): ValidationResult<SearchIndex
     // Validate search index consistency
     if (index.entries.length !== index.totalEntries) {
       errors.push({
-        field: 'totalEntries',
-        message: 'Total entries count does not match actual entries',
+        field: "totalEntries",
+        message: "Total entries count does not match actual entries",
         value: `Expected: ${index.totalEntries}, Actual: ${index.entries.length}`,
-        code: 'ENTRY_COUNT_MISMATCH',
+        code: "ENTRY_COUNT_MISMATCH",
       });
     }
 
     // Check for duplicate entries
-    const entryIds = index.entries.map(entry => entry.id);
+    const entryIds = index.entries.map((entry) => entry.id);
     const uniqueIds = new Set(entryIds);
     if (entryIds.length !== uniqueIds.size) {
       errors.push({
-        field: 'entries',
-        message: 'Duplicate entry IDs found in search index',
+        field: "entries",
+        message: "Duplicate entry IDs found in search index",
         value: entryIds.length - uniqueIds.size,
-        code: 'DUPLICATE_ENTRIES',
+        code: "DUPLICATE_ENTRIES",
       });
     }
 
@@ -472,10 +514,11 @@ export function validateSearchIndex(data: unknown): ValidationResult<SearchIndex
     };
   } catch (error) {
     errors.push({
-      field: 'root',
-      message: error instanceof Error ? error.message : 'Unknown validation error',
+      field: "root",
+      message:
+        error instanceof Error ? error.message : "Unknown validation error",
       value: data,
-      code: 'VALIDATION_ERROR',
+      code: "VALIDATION_ERROR",
     });
 
     return {
@@ -492,7 +535,7 @@ export function validateSearchIndex(data: unknown): ValidationResult<SearchIndex
 function getValueAtPath(obj: unknown, path: (string | number)[]): unknown {
   let current = obj;
   for (const key of path) {
-    if (current && typeof current === 'object' && key in current) {
+    if (current && typeof current === "object" && key in current) {
       current = (current as any)[key];
     } else {
       return undefined;
@@ -515,7 +558,12 @@ function isValidUrl(str: string): boolean {
  */
 export const customValidations = {
   isValidSlug: (slug: string): boolean => {
-    return /^[a-z0-9-]+$/.test(slug) && slug.length >= 3 && !slug.startsWith('-') && !slug.endsWith('-');
+    return (
+      /^[a-z0-9-]+$/.test(slug) &&
+      slug.length >= 3 &&
+      !slug.startsWith("-") &&
+      !slug.endsWith("-")
+    );
   },
 
   isValidVersion: (version: string): boolean => {
@@ -523,7 +571,14 @@ export const customValidations = {
   },
 
   isValidTechStackCategory: (category: string): boolean => {
-    const validCategories = ['framework', 'library', 'tool', 'language', 'database', 'service'];
+    const validCategories = [
+      "framework",
+      "library",
+      "tool",
+      "language",
+      "database",
+      "service",
+    ];
     return validCategories.includes(category);
   },
 
@@ -532,7 +587,7 @@ export const customValidations = {
   },
 
   isValidTag: (tag: string): boolean => {
-    return tag === tag.toLowerCase() && !tag.includes(' ') && tag.length > 0;
+    return tag === tag.toLowerCase() && !tag.includes(" ") && tag.length > 0;
   },
 };
 
@@ -545,31 +600,33 @@ export function formatValidationError(error: ValidationError): string {
 
 export function formatValidationWarning(warning: ValidationWarning): string {
   const base = `${warning.field}: ${warning.message}`;
-  return warning.suggestion ? `${base} (Suggestion: ${warning.suggestion})` : base;
+  return warning.suggestion
+    ? `${base} (Suggestion: ${warning.suggestion})`
+    : base;
 }
 
 export function formatValidationResult<T>(result: ValidationResult<T>): string {
   const lines: string[] = [];
-  
+
   if (result.success) {
-    lines.push('✅ Validation successful');
+    lines.push("✅ Validation successful");
   } else {
-    lines.push('❌ Validation failed');
+    lines.push("❌ Validation failed");
   }
 
   if (result.errors.length > 0) {
-    lines.push('\nErrors:');
-    result.errors.forEach(error => {
+    lines.push("\nErrors:");
+    result.errors.forEach((error) => {
       lines.push(`  • ${formatValidationError(error)}`);
     });
   }
 
   if (result.warnings.length > 0) {
-    lines.push('\nWarnings:');
-    result.warnings.forEach(warning => {
+    lines.push("\nWarnings:");
+    result.warnings.forEach((warning) => {
       lines.push(`  • ${formatValidationWarning(warning)}`);
     });
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }

@@ -23,13 +23,15 @@ pnpm generate:component  # Generate new React components
 ## Architecture
 
 ### Monorepo Structure
+
 - **apps/web**: Main Next.js app for experiments
-- **apps/docs**: Documentation playground  
+- **apps/docs**: Documentation playground
 - **packages/ui**: Shared React components (`@repo/ui`)
 - **packages/eslint-config**: Shared ESLint configurations
 - **packages/typescript-config**: Shared TypeScript configurations
 
 ### Key Technical Decisions
+
 1. **Package Manager**: pnpm v9.0.0 (check pnpm-lock.yaml)
 2. **Build System**: Turborepo with task dependencies and caching
 3. **Development**: Turbopack enabled for faster builds
@@ -37,6 +39,7 @@ pnpm generate:component  # Generate new React components
 5. **ESLint**: v9 with flat config format
 
 ### Package Dependencies
+
 - Internal packages use `workspace:*` protocol
 - Apps import from `@repo/ui` for shared components
 - All packages extend shared TypeScript/ESLint configs

@@ -1,13 +1,13 @@
-import { ReactNode } from 'react';
-import { z } from 'zod';
-import type { 
-  ExperimentMetadata, 
-  NavigationNode, 
-  FilterOptions, 
-  SortOptions, 
+import { ReactNode } from "react";
+import { z } from "zod";
+import type {
+  ExperimentMetadata,
+  NavigationNode,
+  FilterOptions,
+  SortOptions,
   SortDirection,
-  ExperimentQueryOptions 
-} from '../../../lib/experiment-processing/types';
+  ExperimentQueryOptions,
+} from "../../../lib/experiment-processing/types";
 
 /**
  * Navigation component props
@@ -85,7 +85,7 @@ export interface ExperimentCardProps {
   showTechStack?: boolean;
   showDifficulty?: boolean;
   className?: string;
-  variant?: 'default' | 'compact' | 'detailed';
+  variant?: "default" | "compact" | "detailed";
 }
 
 /**
@@ -115,7 +115,7 @@ export interface BreadcrumbProps {
 export interface LoadingProps {
   message?: string;
   className?: string;
-  variant?: 'spinner' | 'skeleton' | 'pulse';
+  variant?: "spinner" | "skeleton" | "pulse";
 }
 
 /**
@@ -157,17 +157,20 @@ export type NavigationState = z.infer<typeof NavigationState>;
 /**
  * Navigation context actions
  */
-export type NavigationAction = 
-  | { type: 'SELECT_EXPERIMENT'; payload: ExperimentMetadata }
-  | { type: 'TOGGLE_NODE'; payload: string }
-  | { type: 'SET_SEARCH_QUERY'; payload: string }
-  | { type: 'SET_FILTERS'; payload: FilterOptions }
-  | { type: 'SET_SORT'; payload: { sortBy: SortOptions; direction: SortDirection } }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | undefined }
-  | { type: 'RESET_FILTERS' }
-  | { type: 'EXPAND_ALL' }
-  | { type: 'COLLAPSE_ALL' };
+export type NavigationAction =
+  | { type: "SELECT_EXPERIMENT"; payload: ExperimentMetadata }
+  | { type: "TOGGLE_NODE"; payload: string }
+  | { type: "SET_SEARCH_QUERY"; payload: string }
+  | { type: "SET_FILTERS"; payload: FilterOptions }
+  | {
+      type: "SET_SORT";
+      payload: { sortBy: SortOptions; direction: SortDirection };
+    }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | undefined }
+  | { type: "RESET_FILTERS" }
+  | { type: "EXPAND_ALL" }
+  | { type: "COLLAPSE_ALL" };
 
 /**
  * Navigation context value
@@ -175,14 +178,14 @@ export type NavigationAction =
 export interface NavigationContextValue {
   state: NavigationState;
   dispatch: (action: NavigationAction) => void;
-  
+
   // Computed values
   filteredExperiments: ExperimentMetadata[];
   totalCount: number;
   categories: string[];
   tags: string[];
   techStack: string[];
-  
+
   // Actions
   selectExperiment: (experiment: ExperimentMetadata) => void;
   toggleNode: (nodeId: string) => void;
@@ -234,16 +237,16 @@ export interface UseVirtualizationReturn {
 /**
  * Keyboard navigation types
  */
-export type NavigationKey = 
-  | 'ArrowUp' 
-  | 'ArrowDown' 
-  | 'ArrowLeft' 
-  | 'ArrowRight' 
-  | 'Enter' 
-  | 'Space' 
-  | 'Escape' 
-  | 'Home' 
-  | 'End';
+export type NavigationKey =
+  | "ArrowUp"
+  | "ArrowDown"
+  | "ArrowLeft"
+  | "ArrowRight"
+  | "Enter"
+  | "Space"
+  | "Escape"
+  | "Home"
+  | "End";
 
 export interface KeyboardNavigationProps {
   onKeyDown: (event: React.KeyboardEvent) => void;
@@ -258,14 +261,14 @@ export interface KeyboardNavigationProps {
  * Accessibility types
  */
 export interface AccessibilityProps {
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
-  'aria-describedby'?: string;
-  'aria-expanded'?: boolean;
-  'aria-selected'?: boolean;
-  'aria-level'?: number;
-  'aria-setsize'?: number;
-  'aria-posinset'?: number;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
+  "aria-describedby"?: string;
+  "aria-expanded"?: boolean;
+  "aria-selected"?: boolean;
+  "aria-level"?: number;
+  "aria-setsize"?: number;
+  "aria-posinset"?: number;
   role?: string;
   tabIndex?: number;
 }

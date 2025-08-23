@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ArrowRight, Home, AlertTriangle, Terminal } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Home,
+  AlertTriangle,
+  Terminal,
+} from "lucide-react";
 
 export default function Landing4() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,7 +24,7 @@ export default function Landing4() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -32,56 +38,62 @@ export default function Landing4() {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       };
-      
+
       // Increase glitch intensity based on mouse movement speed
-      glitchIntensityRef.current = Math.min(glitchIntensityRef.current + 2, 100);
+      glitchIntensityRef.current = Math.min(
+        glitchIntensityRef.current + 2,
+        100,
+      );
     };
 
     const drawText = (text: string, x: number, y: number, size: number) => {
       ctx.font = `bold ${size}px monospace`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
       // Main text with RGB split
       const offset = glitchIntensityRef.current / 10;
-      
+
       // Red channel
-      ctx.globalCompositeOperation = 'screen';
-      ctx.fillStyle = 'rgb(255, 0, 0)';
+      ctx.globalCompositeOperation = "screen";
+      ctx.fillStyle = "rgb(255, 0, 0)";
       ctx.fillText(text, x - offset, y);
-      
+
       // Green channel
-      ctx.fillStyle = 'rgb(0, 255, 0)';
+      ctx.fillStyle = "rgb(0, 255, 0)";
       ctx.fillText(text, x, y);
-      
+
       // Blue channel
-      ctx.fillStyle = 'rgb(0, 0, 255)';
+      ctx.fillStyle = "rgb(0, 0, 255)";
       ctx.fillText(text, x + offset, y);
-      
-      ctx.globalCompositeOperation = 'source-over';
+
+      ctx.globalCompositeOperation = "source-over";
     };
 
     const drawGlitchBars = () => {
-      const barCount = Math.floor(Math.random() * 5 + glitchIntensityRef.current / 20);
-      
+      const barCount = Math.floor(
+        Math.random() * 5 + glitchIntensityRef.current / 20,
+      );
+
       for (let i = 0; i < barCount; i++) {
         const y = Math.random() * canvas.height;
         const height = Math.random() * 50 + 5;
-        const offset = (Math.random() - 0.5) * 50 * (glitchIntensityRef.current / 100);
-        
+        const offset =
+          (Math.random() - 0.5) * 50 * (glitchIntensityRef.current / 100);
+
         // Create glitch bar with noise
         const imageData = ctx.getImageData(0, y, canvas.width, height);
         const data = imageData.data;
-        
+
         // Shift RGB channels
         for (let j = 0; j < data.length; j += 4) {
           if (Math.random() > 0.5) {
-            data[j] = data[j + 4] || 0;     // Red
+            data[j] = data[j + 4] || 0; // Red
             data[j + 1] = data[j - 4] || 0; // Green
             data[j + 2] = data[j + 8] || 0; // Blue
           }
         }
-        
+
         ctx.putImageData(imageData, offset, y);
       }
     };
@@ -90,22 +102,22 @@ export default function Landing4() {
       const imageData = ctx.createImageData(canvas.width, canvas.height);
       const data = imageData.data;
       const noiseIntensity = glitchIntensityRef.current / 100;
-      
+
       for (let i = 0; i < data.length; i += 4) {
         const noise = Math.random() * 255 * noiseIntensity;
-        data[i] = noise;     // Red
+        data[i] = noise; // Red
         data[i + 1] = noise; // Green
         data[i + 2] = noise; // Blue
         data[i + 3] = noise * 0.1; // Alpha
       }
-      
+
       ctx.putImageData(imageData, 0, 0);
     };
 
     const drawScanlines = () => {
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
       ctx.lineWidth = 1;
-      
+
       for (let y = 0; y < canvas.height; y += 2) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -116,19 +128,19 @@ export default function Landing4() {
 
     const animate = () => {
       timeRef.current += 0.02;
-      
+
       // Decay glitch intensity
       glitchIntensityRef.current *= 0.95;
-      
+
       // Clear canvas
-      ctx.fillStyle = 'rgb(10, 10, 10)';
+      ctx.fillStyle = "rgb(10, 10, 10)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       // Draw background pattern
       const patternSize = 50;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
       ctx.lineWidth = 1;
-      
+
       for (let x = 0; x < canvas.width; x += patternSize) {
         for (let y = 0; y < canvas.height; y += patternSize) {
           if (Math.random() > 0.8) {
@@ -136,57 +148,63 @@ export default function Landing4() {
           }
         }
       }
-      
+
       // Draw noise
       drawNoise();
-      
+
       // Draw main text
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      
+
       // Glitch displacement
-      const displaceX = (Math.random() - 0.5) * glitchIntensityRef.current / 5;
-      const displaceY = (Math.random() - 0.5) * glitchIntensityRef.current / 5;
-      
-      drawText('DIGITAL', centerX + displaceX, centerY - 80 + displaceY, 100);
-      drawText('CHAOS', centerX - displaceX, centerY + 20 - displaceY, 100);
-      
+      const displaceX =
+        ((Math.random() - 0.5) * glitchIntensityRef.current) / 5;
+      const displaceY =
+        ((Math.random() - 0.5) * glitchIntensityRef.current) / 5;
+
+      drawText("DIGITAL", centerX + displaceX, centerY - 80 + displaceY, 100);
+      drawText("CHAOS", centerX - displaceX, centerY + 20 - displaceY, 100);
+
       // Draw glitch bars
       if (Math.random() > 0.7 || glitchIntensityRef.current > 20) {
         drawGlitchBars();
       }
-      
+
       // Draw scan lines
       drawScanlines();
-      
+
       // Mouse interaction visual
       const gradient = ctx.createRadialGradient(
-        mouseRef.current.x, mouseRef.current.y, 0,
-        mouseRef.current.x, mouseRef.current.y, 200
+        mouseRef.current.x,
+        mouseRef.current.y,
+        0,
+        mouseRef.current.x,
+        mouseRef.current.y,
+        200,
       );
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0.1)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       // Random glitch spikes
       if (Math.random() > 0.98) {
         glitchIntensityRef.current = 100;
       }
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', handleMouseMove);
-    
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+
     animate();
     setIsLoaded(true);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -194,13 +212,15 @@ export default function Landing4() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#0a0a0a]">
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="text-center z-10 p-8 max-w-4xl glitch-container">
           <div className="flex justify-center mb-4">
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="px-6 py-3 text-lg font-mono animate-pulse border-2 border-red-500 bg-red-500/20"
             >
               <AlertTriangle className="mr-2 h-5 w-5" />
