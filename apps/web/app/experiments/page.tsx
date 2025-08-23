@@ -1,7 +1,11 @@
-'use client';
+"use client";
 
-import { Suspense, useEffect, useState } from 'react';
-import { ExperimentExplorer, ExperimentExplorerSkeleton, ExperimentExplorerError } from '../components/navigation';
+import { Suspense, useEffect, useState } from "react";
+import {
+  ExperimentExplorer,
+  ExperimentExplorerSkeleton,
+  ExperimentExplorerError,
+} from "../components/navigation";
 
 /**
  * Experiments page component
@@ -15,7 +19,8 @@ export default function ExperimentsPage() {
             Experiments
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Explore interactive experiments and learn modern web development techniques.
+            Explore interactive experiments and learn modern web development
+            techniques.
           </p>
         </div>
 
@@ -39,15 +44,15 @@ function ExperimentExplorerWrapper() {
   useEffect(() => {
     async function loadData() {
       try {
-        const response = await fetch('/api/experiments');
+        const response = await fetch("/api/experiments");
         if (!response.ok) {
-          throw new Error('Failed to load experiments');
+          throw new Error("Failed to load experiments");
         }
         const data = await response.json();
         setNavigationTree(data.navigationTree);
         setSearchIndex(data.searchIndex);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
       } finally {
         setIsLoading(false);
       }
@@ -84,10 +89,9 @@ function ExperimentExplorerWrapper() {
       navigationTree={navigationTree}
       searchIndex={searchIndex}
       onExperimentSelect={(experiment) => {
-        console.log('Selected experiment:', experiment);
+        console.log("Selected experiment:", experiment);
       }}
       className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6"
     />
   );
 }
-

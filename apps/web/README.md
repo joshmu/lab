@@ -15,6 +15,7 @@ Visit [http://localhost:3000](http://localhost:3000) to view the application.
 ### About This Lab
 
 This experimental lab is used for:
+
 - Testing modern web development patterns
 - Exploring new React features and Next.js capabilities
 - Prototyping UI components and interactions
@@ -23,6 +24,7 @@ This experimental lab is used for:
 ## Architecture
 
 This app is part of a Turborepo monorepo that includes:
+
 - **apps/web**: This main experimental lab application
 - **apps/docs**: Documentation playground
 - **packages/ui**: Shared React components library

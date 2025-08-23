@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ArrowRight, Home, Zap } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ArrowRight, Home, Zap } from "lucide-react";
 
 interface GridPoint {
   x: number;
@@ -25,7 +25,7 @@ export default function Landing3() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -62,7 +62,12 @@ export default function Landing3() {
       };
     };
 
-    const project3D = (point: GridPoint, centerX: number, centerY: number, perspective: number) => {
+    const project3D = (
+      point: GridPoint,
+      centerX: number,
+      centerY: number,
+      perspective: number,
+    ) => {
       const scale = perspective / (perspective + point.z);
       return {
         x: centerX + point.x * scale,
@@ -73,8 +78,8 @@ export default function Landing3() {
 
     const animate = () => {
       timeRef.current += 0.01;
-      
-      ctx.fillStyle = 'rgba(10, 10, 15, 0.95)';
+
+      ctx.fillStyle = "rgba(10, 10, 15, 0.95)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const centerX = canvas.width / 2;
@@ -87,22 +92,27 @@ export default function Landing3() {
           // Wave effect
           const waveX = Math.sin(timeRef.current + i * 0.1) * 20;
           const waveY = Math.cos(timeRef.current + j * 0.1) * 20;
-          
+
           // Mouse influence
           const distFromCenter = Math.sqrt(
-            Math.pow((i - gridRef.current.length / 2) / gridRef.current.length, 2) +
-            Math.pow((j - row.length / 2) / row.length, 2)
+            Math.pow(
+              (i - gridRef.current.length / 2) / gridRef.current.length,
+              2,
+            ) + Math.pow((j - row.length / 2) / row.length, 2),
           );
-          
+
           const mouseInfluence = 100 * (1 - distFromCenter);
-          point.z = point.originalZ + waveX + waveY + 
-                   mouseRef.current.x * mouseInfluence * 0.5 +
-                   mouseRef.current.y * mouseInfluence * 0.5;
+          point.z =
+            point.originalZ +
+            waveX +
+            waveY +
+            mouseRef.current.x * mouseInfluence * 0.5 +
+            mouseRef.current.y * mouseInfluence * 0.5;
         });
       });
 
       // Draw grid lines
-      ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+      ctx.strokeStyle = "rgba(0, 255, 255, 0.3)";
       ctx.lineWidth = 1;
 
       // Horizontal lines
@@ -138,30 +148,34 @@ export default function Landing3() {
         row.forEach((point, j) => {
           if (i % 3 === 0 && j % 3 === 0) {
             const projected = project3D(point, centerX, centerY, perspective);
-            
+
             // Outer glow
             const gradient = ctx.createRadialGradient(
-              projected.x, projected.y, 0,
-              projected.x, projected.y, 10 * projected.scale
+              projected.x,
+              projected.y,
+              0,
+              projected.x,
+              projected.y,
+              10 * projected.scale,
             );
-            gradient.addColorStop(0, 'rgba(255, 0, 255, 0.8)');
-            gradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
-            
+            gradient.addColorStop(0, "rgba(255, 0, 255, 0.8)");
+            gradient.addColorStop(1, "rgba(255, 0, 255, 0)");
+
             ctx.fillStyle = gradient;
             ctx.fillRect(
               projected.x - 20 * projected.scale,
               projected.y - 20 * projected.scale,
               40 * projected.scale,
-              40 * projected.scale
+              40 * projected.scale,
             );
-            
+
             // Inner node
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.fillRect(
               projected.x - 2 * projected.scale,
               projected.y - 2 * projected.scale,
               4 * projected.scale,
-              4 * projected.scale
+              4 * projected.scale,
             );
           }
         });
@@ -169,14 +183,19 @@ export default function Landing3() {
 
       // Add scan line effect
       const scanLineY = (timeRef.current * 100) % canvas.height;
-      ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+      ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
       ctx.fillRect(0, scanLineY, canvas.width, 2);
-      
+
       // Add glow at scan line position
-      const scanGradient = ctx.createLinearGradient(0, scanLineY - 20, 0, scanLineY + 20);
-      scanGradient.addColorStop(0, 'rgba(0, 255, 255, 0)');
-      scanGradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.2)');
-      scanGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+      const scanGradient = ctx.createLinearGradient(
+        0,
+        scanLineY - 20,
+        0,
+        scanLineY + 20,
+      );
+      scanGradient.addColorStop(0, "rgba(0, 255, 255, 0)");
+      scanGradient.addColorStop(0.5, "rgba(0, 255, 255, 0.2)");
+      scanGradient.addColorStop(1, "rgba(0, 255, 255, 0)");
       ctx.fillStyle = scanGradient;
       ctx.fillRect(0, scanLineY - 20, canvas.width, 40);
 
@@ -184,15 +203,15 @@ export default function Landing3() {
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', handleMouseMove);
-    
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+
     animate();
     setIsLoaded(true);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -200,11 +219,16 @@ export default function Landing3() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#0a0a0f]">
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="text-center z-10 p-8 max-w-4xl">
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-cyan-400 glitch relative mb-4" data-text="CYBER GRID">
+          <h1
+            className="text-6xl md:text-8xl font-black tracking-tighter text-cyan-400 glitch relative mb-4"
+            data-text="CYBER GRID"
+          >
             CYBER GRID
           </h1>
           <p className="text-xl md:text-2xl text-cyan-300 font-mono mb-6">
@@ -212,14 +236,20 @@ export default function Landing3() {
           </p>
           <div className="flex gap-8 justify-center font-mono mb-8">
             <div className="text-center">
-              <Badge variant="outline" className="border-2 border-cyan-500/50 bg-cyan-500/10 text-cyan-300 px-4 py-2">
+              <Badge
+                variant="outline"
+                className="border-2 border-cyan-500/50 bg-cyan-500/10 text-cyan-300 px-4 py-2"
+              >
                 <Zap className="mr-2 h-4 w-4 animate-pulse" />
                 <span className="text-xs opacity-70">SYSTEM</span>
                 <span className="ml-2 font-bold">ONLINE</span>
               </Badge>
             </div>
             <div className="text-center">
-              <Badge variant="outline" className="border-2 border-pink-500/50 bg-pink-500/10 text-pink-300 px-4 py-2">
+              <Badge
+                variant="outline"
+                className="border-2 border-pink-500/50 bg-pink-500/10 text-pink-300 px-4 py-2"
+              >
                 <span className="text-xs opacity-70">MATRIX</span>
                 <span className="ml-2 font-bold">ACTIVE</span>
               </Badge>

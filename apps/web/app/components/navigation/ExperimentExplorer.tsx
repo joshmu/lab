@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { clsx } from 'clsx';
-import { NavigationTree } from './NavigationTree';
-import { SearchBar } from './SearchBar';
-import { FilterPanel } from './FilterPanel';
-import type { 
-  NavigationNode, 
-  ExperimentMetadata, 
-  FilterOptions 
-} from '../../../lib/experiment-processing/types';
+import React, { useState, useCallback, useMemo } from "react";
+import { clsx } from "clsx";
+import { NavigationTree } from "./NavigationTree";
+import { SearchBar } from "./SearchBar";
+import { FilterPanel } from "./FilterPanel";
+import type {
+  NavigationNode,
+  ExperimentMetadata,
+  FilterOptions,
+} from "../../../lib/experiment-processing/types";
 
 /**
  * Props for the ExperimentExplorer component
@@ -29,7 +29,7 @@ export interface ExperimentExplorerProps {
       category: string;
       tags: string[];
       techStack: string[];
-      difficulty: 'beginner' | 'intermediate' | 'advanced';
+      difficulty: "beginner" | "intermediate" | "advanced";
       slug: string;
       path: string;
       featured?: boolean;
@@ -57,22 +57,25 @@ export function ExperimentExplorer({
   showFilters = true,
   initialFilters = {},
 }: ExperimentExplorerProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>(initialFilters);
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>();
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
-    new Set(navigationTree.nodes.map(node => node.id))
+    new Set(navigationTree.nodes.map((node) => node.id)),
   );
 
   // Handle experiment selection
-  const handleExperimentSelect = useCallback((experiment: ExperimentMetadata) => {
-    setSelectedExperimentId(experiment.id);
-    onExperimentSelect?.(experiment);
-  }, [onExperimentSelect]);
+  const handleExperimentSelect = useCallback(
+    (experiment: ExperimentMetadata) => {
+      setSelectedExperimentId(experiment.id);
+      onExperimentSelect?.(experiment);
+    },
+    [onExperimentSelect],
+  );
 
   // Handle node expansion/collapse
   const handleNodeToggle = useCallback((nodeId: string) => {
-    setExpandedNodes(prev => {
+    setExpandedNodes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(nodeId)) {
         newSet.delete(nodeId);
@@ -103,42 +106,59 @@ export function ExperimentExplorer({
       return navigationTree;
     }
 
-    const matchesSearch = (experiment: ExperimentMetadata, query: string): boolean => {
+    const matchesSearch = (
+      experiment: ExperimentMetadata,
+      query: string,
+    ): boolean => {
       if (!query.trim()) return true;
-      
+
       const searchTerm = query.toLowerCase();
       return (
         experiment.title.toLowerCase().includes(searchTerm) ||
         experiment.description.toLowerCase().includes(searchTerm) ||
-        experiment.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
-        experiment.techStack.some(tech => tech.name.toLowerCase().includes(searchTerm)) ||
+        experiment.tags.some((tag) => tag.toLowerCase().includes(searchTerm)) ||
+        experiment.techStack.some((tech) =>
+          tech.name.toLowerCase().includes(searchTerm),
+        ) ||
         experiment.category.toLowerCase().includes(searchTerm) ||
-        ((experiment.keywords || []).some(keyword => 
-          keyword.toLowerCase().includes(searchTerm)
-        ))
+        (experiment.keywords || []).some((keyword) =>
+          keyword.toLowerCase().includes(searchTerm),
+        )
       );
     };
 
     const matchesFilters = (experiment: ExperimentMetadata): boolean => {
       // Category filter
-      if (filters.categories?.length && !filters.categories.includes(experiment.category)) {
+      if (
+        filters.categories?.length &&
+        !filters.categories.includes(experiment.category)
+      ) {
         return false;
       }
 
       // Tags filter
-      if (filters.tags?.length && !filters.tags.some(tag => experiment.tags.includes(tag))) {
+      if (
+        filters.tags?.length &&
+        !filters.tags.some((tag) => experiment.tags.includes(tag))
+      ) {
         return false;
       }
 
       // Tech stack filter
-      if (filters.techStack?.length && !filters.techStack.some(tech => 
-        experiment.techStack.some(expTech => expTech.name === tech)
-      )) {
+      if (
+        filters.techStack?.length &&
+        !filters.techStack.some((tech) =>
+          experiment.techStack.some((expTech) => expTech.name === tech),
+        )
+      ) {
         return false;
       }
 
       // Difficulty filter
-      if (filters.difficulty?.length && !filters.difficulty.includes(experiment.difficulty)) {
+      if (
+        filters.difficulty?.length &&
+        !filters.difficulty.includes(experiment.difficulty)
+      ) {
         return false;
       }
 
@@ -151,33 +171,40 @@ export function ExperimentExplorer({
     };
 
     const filterNodes = (nodes: NavigationNode[]): NavigationNode[] => {
-      return nodes.map(node => {
-        if (node.type === 'category') {
-          const filteredChildren = node.children ? filterNodes(node.children) : [];
-          
-          if (filteredChildren.length === 0) {
-            return null;
+      return nodes
+        .map((node) => {
+          if (node.type === "category") {
+            const filteredChildren = node.children
+              ? filterNodes(node.children)
+              : [];
+
+            if (filteredChildren.length === 0) {
+              return null;
+            }
+
+            return {
+              ...node,
+              children: filteredChildren,
+              count: filteredChildren.length,
+            };
+          } else if (node.type === "experiment" && node.metadata) {
+            const experiment = node.metadata;
+            if (
+              matchesSearch(experiment, searchQuery) &&
+              matchesFilters(experiment)
+            ) {
+              return node;
+            }
           }
 
-          return {
-            ...node,
-            children: filteredChildren,
-            count: filteredChildren.length,
-          };
-        } else if (node.type === 'experiment' && node.metadata) {
-          const experiment = node.metadata;
-          if (matchesSearch(experiment, searchQuery) && matchesFilters(experiment)) {
-            return node;
-          }
-        }
-
-        return null;
-      }).filter((node): node is NavigationNode => node !== null);
+          return null;
+        })
+        .filter((node): node is NavigationNode => node !== null);
     };
 
     const filteredNodes = filterNodes(navigationTree.nodes);
     const totalExperiments = filteredNodes.reduce((count, node) => {
-      if (node.type === 'category') {
+      if (node.type === "category") {
         return count + (node.count || 0);
       }
       return count + 1;
@@ -195,17 +222,20 @@ export function ExperimentExplorer({
     if (!searchQuery.trim()) return [];
 
     return searchIndex.entries
-      .filter(entry => {
+      .filter((entry) => {
         const searchTerm = searchQuery.toLowerCase();
         return (
           entry.title.toLowerCase().includes(searchTerm) ||
           entry.description.toLowerCase().includes(searchTerm) ||
-          entry.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
-          entry.techStack.some(tech => tech.toLowerCase().includes(searchTerm)) ||
+          entry.tags.some((tag) => tag.toLowerCase().includes(searchTerm)) ||
+          entry.techStack.some((tech) =>
+            tech.toLowerCase().includes(searchTerm),
+          ) ||
           entry.category.toLowerCase().includes(searchTerm) ||
-          (entry.keywords && entry.keywords.some(keyword => 
-            keyword.toLowerCase().includes(searchTerm)
-          ))
+          (entry.keywords &&
+            entry.keywords.some((keyword) =>
+              keyword.toLowerCase().includes(searchTerm),
+            ))
         );
       })
       .slice(0, 8); // Limit results for performance
@@ -213,9 +243,15 @@ export function ExperimentExplorer({
 
   // Available filter options
   const availableOptions = useMemo(() => {
-    const categories = [...new Set(searchIndex.entries.map(entry => entry.category))].sort();
-    const tags = [...new Set(searchIndex.entries.flatMap(entry => entry.tags))].sort();
-    const techStack = [...new Set(searchIndex.entries.flatMap(entry => entry.techStack))].sort();
+    const categories = [
+      ...new Set(searchIndex.entries.map((entry) => entry.category)),
+    ].sort();
+    const tags = [
+      ...new Set(searchIndex.entries.flatMap((entry) => entry.tags)),
+    ].sort();
+    const techStack = [
+      ...new Set(searchIndex.entries.flatMap((entry) => entry.techStack)),
+    ].sort();
 
     return {
       categories,
@@ -225,7 +261,7 @@ export function ExperimentExplorer({
   }, [searchIndex.entries]);
 
   return (
-    <div className={clsx('flex flex-col space-y-4', className)}>
+    <div className={clsx("flex flex-col space-y-4", className)}>
       {/* Search and Filters */}
       {(showSearch || showFilters) && (
         <div className="flex flex-col sm:flex-row gap-4">
@@ -239,9 +275,9 @@ export function ExperimentExplorer({
                 onResultSelect={(experiment) => {
                   // Convert search result to experiment metadata
                   const fullExperiment = navigationTree.nodes
-                    .flatMap(node => node.children || [])
-                    .find(child => child.id === experiment.id)?.metadata;
-                  
+                    .flatMap((node) => node.children || [])
+                    .find((child) => child.id === experiment.id)?.metadata;
+
                   if (fullExperiment) {
                     handleExperimentSelect(fullExperiment);
                   }
@@ -249,7 +285,7 @@ export function ExperimentExplorer({
               />
             </div>
           )}
-          
+
           {showFilters && (
             <FilterPanel
               options={filters}
@@ -266,10 +302,9 @@ export function ExperimentExplorer({
       {/* Results Summary */}
       {(searchQuery.trim() || Object.keys(filters).length > 0) && (
         <div className="text-sm text-gray-600 dark:text-gray-400">
-          Showing {filteredNavigationTree.totalExperiments} of {navigationTree.totalExperiments} experiments
-          {searchQuery.trim() && (
-            <span> for &quot;{searchQuery}&quot;</span>
-          )}
+          Showing {filteredNavigationTree.totalExperiments} of{" "}
+          {navigationTree.totalExperiments} experiments
+          {searchQuery.trim() && <span> for &quot;{searchQuery}&quot;</span>}
         </div>
       )}
 
@@ -287,7 +322,8 @@ export function ExperimentExplorer({
       {/* Footer */}
       {navigationTree.totalExperiments > 0 && (
         <div className="text-xs text-gray-500 dark:text-gray-400 text-center pt-4 border-t border-gray-200 dark:border-gray-700">
-          Last updated: {new Date(navigationTree.lastUpdated).toLocaleDateString()}
+          Last updated:{" "}
+          {new Date(navigationTree.lastUpdated).toLocaleDateString()}
         </div>
       )}
     </div>
@@ -297,15 +333,19 @@ export function ExperimentExplorer({
 /**
  * Loading state component
  */
-export function ExperimentExplorerSkeleton({ className }: { className?: string }) {
+export function ExperimentExplorerSkeleton({
+  className,
+}: {
+  className?: string;
+}) {
   return (
-    <div className={clsx('flex flex-col space-y-4', className)}>
+    <div className={clsx("flex flex-col space-y-4", className)}>
       {/* Search skeleton */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
         <div className="w-24 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
       </div>
-      
+
       {/* Tree skeleton */}
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -313,7 +353,10 @@ export function ExperimentExplorerSkeleton({ className }: { className?: string }
             <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
             <div className="ml-6 space-y-1">
               {Array.from({ length: 2 }).map((_, j) => (
-                <div key={j} className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+                <div
+                  key={j}
+                  className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"
+                />
               ))}
             </div>
           </div>
@@ -326,17 +369,17 @@ export function ExperimentExplorerSkeleton({ className }: { className?: string }
 /**
  * Error state component
  */
-export function ExperimentExplorerError({ 
-  error, 
-  onRetry, 
-  className 
-}: { 
+export function ExperimentExplorerError({
+  error,
+  onRetry,
+  className,
+}: {
   error: string;
   onRetry?: () => void;
   className?: string;
 }) {
   return (
-    <div className={clsx('p-6 text-center', className)}>
+    <div className={clsx("p-6 text-center", className)}>
       <div className="space-y-4">
         <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
           <span className="text-2xl">⚠️</span>

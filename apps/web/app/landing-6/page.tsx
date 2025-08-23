@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface Drop {
   x: number;
@@ -24,12 +24,13 @@ export default function Landing6() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // ASCII characters to use
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]<>?/|\\~`!+-=_';
-    const charArray = chars.split('');
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]<>?/|\\~`!+-=_";
+    const charArray = chars.split("");
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -50,7 +51,13 @@ export default function Landing6() {
             y: Math.random() * -canvas.height,
             speed: Math.random() * 2 + 1,
             length: Math.floor(Math.random() * 20) + 10,
-            chars: Array(30).fill('').map(() => charArray[Math.floor(Math.random() * charArray.length)] || 'A'),
+            chars: Array(30)
+              .fill("")
+              .map(
+                () =>
+                  charArray[Math.floor(Math.random() * charArray.length)] ||
+                  "A",
+              ),
             opacity: Math.random() * 0.5 + 0.5,
           });
         }
@@ -67,11 +74,11 @@ export default function Landing6() {
 
     const animate = () => {
       // Fade effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.font = '16px monospace';
-      ctx.textAlign = 'center';
+      ctx.font = "16px monospace";
+      ctx.textAlign = "center";
 
       dropsRef.current.forEach((drop) => {
         // Update position
@@ -80,7 +87,10 @@ export default function Landing6() {
         // Reset if off screen
         if (drop.y - drop.length * 20 > canvas.height) {
           drop.y = -drop.length * 20;
-          drop.chars = drop.chars.map(() => charArray[Math.floor(Math.random() * charArray.length)] || 'A');
+          drop.chars = drop.chars.map(
+            () =>
+              charArray[Math.floor(Math.random() * charArray.length)] || "A",
+          );
         }
 
         // Mouse interaction - repel drops
@@ -99,14 +109,14 @@ export default function Landing6() {
         // Draw characters
         drop.chars.forEach((char, index) => {
           const charY = drop.y + index * 20;
-          
+
           if (charY > 0 && charY < canvas.height) {
             // Calculate brightness based on position in drop
             let brightness = 1;
             if (index < 5) {
               brightness = 1; // Head is brightest
             } else if (index < drop.length) {
-              brightness = 1 - (index - 5) / (drop.length - 5) * 0.8;
+              brightness = 1 - ((index - 5) / (drop.length - 5)) * 0.8;
             } else {
               brightness = 0.2;
             }
@@ -114,7 +124,7 @@ export default function Landing6() {
             // Green with varying brightness
             const green = Math.floor(255 * brightness);
             ctx.fillStyle = `rgba(0, ${green}, 0, ${drop.opacity * brightness})`;
-            
+
             // White head for some drops
             if (index === 0 && Math.random() > 0.95) {
               ctx.fillStyle = `rgba(255, 255, 255, ${drop.opacity})`;
@@ -122,7 +132,8 @@ export default function Landing6() {
 
             // Randomly change character
             if (Math.random() > 0.98) {
-              drop.chars[index] = charArray[Math.floor(Math.random() * charArray.length)] || 'A';
+              drop.chars[index] =
+                charArray[Math.floor(Math.random() * charArray.length)] || "A";
             }
 
             ctx.fillText(char, drop.x, charY);
@@ -134,15 +145,15 @@ export default function Landing6() {
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', handleMouseMove);
-    
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+
     animate();
     setIsLoaded(true);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -150,9 +161,11 @@ export default function Landing6() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="text-center z-10 p-8 backdrop-blur-sm bg-black/30 border border-green-500/20 rounded-lg">
           <h1 className="text-6xl md:text-8xl font-mono font-bold text-green-400 glitch-text relative space-y-2 mb-4">
             <span className="block">DIGITAL</span>
@@ -172,26 +185,20 @@ export default function Landing6() {
               variant="outline"
               className="font-mono rounded-none border-2 border-green-500/50 bg-black/80 hover:bg-green-950/50 text-green-400 hover:text-green-300 hover:border-green-400 transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] min-h-12 px-6 py-3 text-base"
             >
-              <Link href="/landing-5">
-                ← Previous
-              </Link>
+              <Link href="/landing-5">← Previous</Link>
             </Button>
             <Button
               asChild
               className="font-mono rounded-none border-2 border-green-500 bg-green-500/20 hover:bg-green-500 text-green-300 hover:text-black font-bold transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,197,94,0.8)] min-h-12 px-6 py-3 text-base"
             >
-              <Link href="/">
-                EXIT MATRIX
-              </Link>
+              <Link href="/">EXIT MATRIX</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               className="font-mono rounded-none border-2 border-green-500/50 bg-black/80 hover:bg-green-950/50 text-green-400 hover:text-green-300 hover:border-green-400 transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] min-h-12 px-6 py-3 text-base"
             >
-              <Link href="/landing-1">
-                Restart →
-              </Link>
+              <Link href="/landing-1">Restart →</Link>
             </Button>
           </div>
         </div>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Home } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Home } from "lucide-react";
 
 interface Particle {
   x: number;
@@ -27,7 +27,7 @@ export default function Landing1() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -39,11 +39,11 @@ export default function Landing1() {
     const initParticles = () => {
       particlesRef.current = [];
       const particleCount = Math.floor((canvas.width * canvas.height) / 8000);
-      
+
       for (let i = 0; i < particleCount; i++) {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        
+
         particlesRef.current.push({
           x,
           y,
@@ -66,7 +66,7 @@ export default function Landing1() {
     };
 
     const animate = () => {
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillStyle = "rgba(10, 10, 10, 0.1)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       particlesRef.current.forEach((particle) => {
@@ -74,7 +74,7 @@ export default function Landing1() {
         const dy = mouseRef.current.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxDistance = 150;
-        
+
         if (distance < maxDistance) {
           const force = (maxDistance - distance) / maxDistance;
           const angle = Math.atan2(dy, dx);
@@ -105,7 +105,7 @@ export default function Landing1() {
           const dx = otherParticle.x - particle.x;
           const dy = otherParticle.y - particle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (distance < 100 && distance > 0) {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
@@ -121,15 +121,15 @@ export default function Landing1() {
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', handleMouseMove);
-    
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+
     animate();
     setIsLoaded(true);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -137,9 +137,11 @@ export default function Landing1() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-gray-950">
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1500 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1500 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="text-center z-10 p-8 max-w-4xl">
           <h1 className="space-y-2 mb-4">
             <span className="block text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-[length:200%_auto] animate-gradient">

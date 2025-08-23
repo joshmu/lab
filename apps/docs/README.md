@@ -15,6 +15,7 @@ Visit [http://localhost:3001](http://localhost:3001) to view the documentation p
 ### Purpose
 
 This docs app serves as:
+
 - A playground for testing documentation patterns
 - A showcase for shared UI components from @repo/ui
 - An example of multi-app Turborepo architecture
@@ -22,6 +23,7 @@ This docs app serves as:
 ## Integration with Main Lab
 
 This documentation app:
+
 - Shares UI components with the main lab app via @repo/ui
 - Uses the same TypeScript and ESLint configurations
 - Runs alongside the main app in the Turborepo workspace

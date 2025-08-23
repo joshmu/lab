@@ -42,4 +42,3 @@ pnpm typecheck
 # Run linting
 pnpm lint
 ```
-

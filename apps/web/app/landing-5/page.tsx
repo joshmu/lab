@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ArrowRight, Home, Sparkles, Circle } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, ArrowRight, Home, Sparkles, Circle } from "lucide-react";
 
 interface Shape {
   x: number;
@@ -33,7 +33,7 @@ export default function Landing5() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -67,7 +67,9 @@ export default function Landing5() {
 
       // Create shapes on mouse movement
       if (Math.random() > 0.7) {
-        shapesRef.current.push(createShape(mouseRef.current.x, mouseRef.current.y));
+        shapesRef.current.push(
+          createShape(mouseRef.current.x, mouseRef.current.y),
+        );
       }
     };
 
@@ -79,7 +81,10 @@ export default function Landing5() {
 
       const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, shape.radius);
       gradient.addColorStop(0, `hsla(${shape.hue}, 70%, 60%, ${alpha})`);
-      gradient.addColorStop(0.5, `hsla(${shape.hue + 30}, 70%, 50%, ${alpha * 0.5})`);
+      gradient.addColorStop(
+        0.5,
+        `hsla(${shape.hue + 30}, 70%, 50%, ${alpha * 0.5})`,
+      );
       gradient.addColorStop(1, `hsla(${shape.hue + 60}, 70%, 40%, 0)`);
 
       ctx.fillStyle = gradient;
@@ -87,7 +92,7 @@ export default function Landing5() {
       ctx.lineWidth = 2;
 
       ctx.beginPath();
-      
+
       if (shape.sides === 3) {
         // Triangle
         for (let i = 0; i < 3; i++) {
@@ -121,7 +126,7 @@ export default function Landing5() {
       ctx.stroke();
 
       // Inner details
-      ctx.globalCompositeOperation = 'screen';
+      ctx.globalCompositeOperation = "screen";
       for (let i = 0; i < 3; i++) {
         ctx.beginPath();
         ctx.arc(0, 0, shape.radius * (0.3 + i * 0.2), 0, Math.PI * 2);
@@ -136,7 +141,7 @@ export default function Landing5() {
       timeRef.current += 0.01;
 
       // Fade effect
-      ctx.fillStyle = 'rgba(10, 10, 15, 0.05)';
+      ctx.fillStyle = "rgba(10, 10, 15, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Auto-generate shapes
@@ -147,13 +152,13 @@ export default function Landing5() {
       }
 
       // Update and draw shapes
-      shapesRef.current = shapesRef.current.filter(shape => {
+      shapesRef.current = shapesRef.current.filter((shape) => {
         shape.life++;
-        
+
         // Update properties
         shape.rotation += shape.rotationSpeed;
         shape.hue += shape.hueSpeed;
-        
+
         // Growth phase
         if (shape.life < shape.maxLife * 0.3) {
           shape.scale += shape.scaleSpeed;
@@ -194,19 +199,19 @@ export default function Landing5() {
       });
 
       // Draw connections between nearby shapes
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
       ctx.lineWidth = 1;
-      
+
       for (let i = 0; i < shapesRef.current.length; i++) {
         for (let j = i + 1; j < shapesRef.current.length; j++) {
           const shape1 = shapesRef.current[i];
           const shape2 = shapesRef.current[j];
           if (!shape1 || !shape2) continue;
-          
+
           const dx = shape2.x - shape1.x;
           const dy = shape2.y - shape1.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (distance < 150) {
             ctx.beginPath();
             ctx.moveTo(shape1.x, shape1.y);
@@ -220,15 +225,15 @@ export default function Landing5() {
     };
 
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', handleMouseMove);
-    
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("mousemove", handleMouseMove);
+
     animate();
     setIsLoaded(true);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
   }, []);
@@ -236,9 +241,11 @@ export default function Landing5() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#0a0a0f]">
       <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
-        isLoaded ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="text-center z-10 p-8 max-w-4xl">
           <h1 className="space-y-2 mb-4">
             <span className="block text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-400 to-purple-400 animate-float">
@@ -252,15 +259,15 @@ export default function Landing5() {
             Patterns emerge from chaos, beauty from complexity
           </p>
           <div className="flex gap-6 justify-center mb-8">
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className="border-2 border-orange-500/50 bg-orange-500/10 text-orange-300 px-4 py-2"
             >
               <Circle className="mr-2 h-3 w-3 fill-current animate-pulse" />
               Move to create
             </Badge>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className="border-2 border-purple-500/50 bg-purple-500/10 text-purple-300 px-4 py-2"
             >
               <Sparkles className="mr-2 h-4 w-4 animate-spin-slow" />
