@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquid Morphing - Interactive Animation</title>
+  <!--
+  ---
+  id: liquid-morphing-002
+  title: Liquid Morphing
+  description: Fluid blob animations with metaball effects, creating organic liquid-like movements and morphing shapes.
+  category: interactive-animations
+  tags: [blobs, metaballs, fluid, organic, morphing, canvas]
+  difficulty: advanced
+  author: Josh Mu
+  created: 2025-01-16
+  updated: 2025-01-21
+  estimatedTime: 1 hour
+  prerequisites: [Canvas API proficiency, Understanding of bezier curves, Basic fluid dynamics concepts]
+  learningObjectives:
+    - Implement metaball algorithms
+    - Create organic blob movements
+    - Handle complex canvas transformations
+    - Apply noise functions for natural motion
+    - Optimize fluid simulation performance
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: #141414;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    .overlay.loaded {
+      opacity: 1;
+    }
+
+    .content {
+      text-align: center;
+      z-index: 10;
+      padding: 2rem;
+      max-width: 64rem;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .title-line {
+      display: block;
+      font-size: 6rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .title-line:nth-child(1) {
+      background: linear-gradient(90deg, #f472b6, #a78bfa, #818cf8);
+    }
+
+    .title-line:nth-child(2) {
+      background: linear-gradient(90deg, #818cf8, #a78bfa, #f472b6);
+      animation-delay: 500ms;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      color: #d1d5db;
+      font-weight: 300;
+      letter-spacing: 0.025em;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 9999px;
+      border: 2px solid rgba(168, 85, 247, 0.5);
+      background: rgba(168, 85, 247, 0.1);
+      color: #d8b4fe;
+      margin-bottom: 2rem;
+      pointer-events: all;
+    }
+
+    .pulse-icon {
+      width: 1rem;
+      height: 1rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      pointer-events: all;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      min-height: 2.75rem;
+    }
+
+    .btn-outline {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn-gradient {
+      background: linear-gradient(90deg, #ec4899, #a855f7);
+      color: white;
+    }
+
+    .btn-gradient:hover {
+      background: linear-gradient(90deg, #f472b6, #c084fc);
+      box-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .title-line {
+        font-size: 4rem;
+      }
+      .subtitle {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="overlay" id="overlay">
+    <div class="content">
+      <h1>
+        <span class="title-line">Liquid</span>
+        <span class="title-line">Dreams</span>
+      </h1>
+      <p class="subtitle">Morphing realities in perpetual motion</p>
+      <div class="badge">
+        <svg class="pulse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        Interactive
+      </div>
+      <div class="buttons">
+        <a href="https://github.com/joshmu" class="btn btn-outline">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+
+    let blobs = [];
+    let animationId = 0;
+    const mouse = { x: 0, y: 0 };
+    let time = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initBlobs();
+    }
+
+    function initBlobs() {
+      blobs = [];
+      const blobCount = 8;
+
+      for (let i = 0; i < blobCount; i++) {
+        blobs.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          targetX: Math.random() * canvas.width,
+          targetY: Math.random() * canvas.height,
+          radius: Math.random() * 100 + 50,
+          angle: Math.random() * Math.PI * 2,
+          speed: Math.random() * 0.5 + 0.5,
+          hue: Math.random() * 360,
+        });
+      }
+    }
+
+    function handleMouseMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    }
+
+    function metaball(x, y) {
+      let sum = 0;
+      blobs.forEach((blob) => {
+        const dx = x - blob.x;
+        const dy = y - blob.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        sum += (blob.radius * blob.radius) / (distance * distance);
+      });
+
+      // Add mouse influence
+      const mouseDx = x - mouse.x;
+      const mouseDy = y - mouse.y;
+      const mouseDistance = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy);
+      sum += 10000 / (mouseDistance * mouseDistance);
+
+      return sum;
+    }
+
+    function animate() {
+      time += 0.01;
+
+      // Clear canvas
+      ctx.fillStyle = 'rgba(20, 20, 20, 1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Update blobs
+      blobs.forEach((blob, index) => {
+        // Move towards target
+        const dx = blob.targetX - blob.x;
+        const dy = blob.targetY - blob.y;
+        blob.x += dx * 0.02;
+        blob.y += dy * 0.02;
+
+        // If close to target, pick new target
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+          blob.targetX = Math.random() * canvas.width;
+          blob.targetY = Math.random() * canvas.height;
+        }
+
+        // Organic movement
+        blob.x += Math.sin(time + index) * 2;
+        blob.y += Math.cos(time + index * 0.8) * 2;
+
+        // Mouse repulsion
+        const mouseDx = blob.x - mouse.x;
+        const mouseDy = blob.y - mouse.y;
+        const mouseDistance = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy);
+        if (mouseDistance < 200) {
+          const force = (200 - mouseDistance) / 200;
+          blob.x += (mouseDx / mouseDistance) * force * 10;
+          blob.y += (mouseDy / mouseDistance) * force * 10;
+        }
+      });
+
+      // Render metaballs
+      const step = 4; // Sampling step for performance
+
+      for (let x = 0; x < canvas.width; x += step) {
+        for (let y = 0; y < canvas.height; y += step) {
+          const value = metaball(x, y);
+
+          if (value > 1) {
+            // Calculate color based on position and time
+            const hue = (x / canvas.width * 60 + y / canvas.height * 60 + time * 20) % 360;
+            const color = `hsl(${hue}, 70%, ${50 + value * 10}%)`;
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, step, step);
+          }
+        }
+      }
+
+      // Add glow effect
+      ctx.filter = 'blur(20px)';
+      ctx.globalCompositeOperation = 'screen';
+      ctx.drawImage(canvas, 0, 0);
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'source-over';
+
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Initialize
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    animate();
+
+    // Show overlay after a brief delay
+    setTimeout(() => {
+      overlay.classList.add('loaded');
+    }, 100);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(animationId);
+    });
+  </script>
+</body>
+</html>

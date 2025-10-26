@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Rain - Matrix Effect</title>
+  <!--
+  ---
+  id: digital-rain-006
+  title: Digital Rain
+  description: Matrix-style falling ASCII characters with authentic green-on-black terminal aesthetics and dynamic character generation.
+  category: interactive-animations
+  tags: [matrix, ascii, terminal, retro, cyber, falling-text]
+  difficulty: beginner
+  author: Josh Mu
+  created: 2025-01-20
+  updated: 2025-01-25
+  estimatedTime: 30 mins
+  prerequisites: [Basic JavaScript, Canvas API basics, Understanding of text rendering]
+  learningObjectives:
+    - Implement text-based animations
+    - Create authentic Matrix effects
+    - Handle character generation and falling motion
+    - Apply retro terminal aesthetics
+    - Optimize text rendering performance
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: #000;
+      font-family: 'Courier New', monospace;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .overlay.loaded {
+      opacity: 1;
+    }
+
+    .content {
+      text-align: center;
+      z-index: 10;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 0.5rem;
+    }
+
+    h1 {
+      font-size: 6rem;
+      font-weight: bold;
+      color: #22c55e;
+      margin-bottom: 1rem;
+      animation: glitch 2s infinite;
+      position: relative;
+    }
+
+    h1 span {
+      display: block;
+    }
+
+    @keyframes glitch {
+      0% {
+        text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff,
+          0.025em 0.05em 0 #fffc00;
+      }
+      15% {
+        text-shadow: 0.05em 0 0 #00fffc, -0.05em -0.025em 0 #fc00ff,
+          0.025em 0.05em 0 #fffc00;
+      }
+      16% {
+        text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff,
+          -0.05em -0.05em 0 #fffc00;
+      }
+      49% {
+        text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.025em 0 #fc00ff,
+          -0.05em -0.05em 0 #fffc00;
+      }
+      50% {
+        text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff,
+          0 -0.05em 0 #fffc00;
+      }
+      99% {
+        text-shadow: 0.025em 0.05em 0 #00fffc, 0.05em 0 0 #fc00ff,
+          0 -0.05em 0 #fffc00;
+      }
+      100% {
+        text-shadow: -0.025em 0 0 #00fffc, -0.025em -0.025em 0 #fc00ff,
+          -0.025em -0.05em 0 #fffc00;
+      }
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      color: rgba(34, 197, 94, 0.8);
+      margin-bottom: 1.5rem;
+    }
+
+    .quote {
+      font-size: 0.875rem;
+      color: #22c55e;
+      margin-bottom: 2rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-center;
+      flex-wrap: wrap;
+      pointer-events: all;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border: 2px solid;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      min-height: 3rem;
+    }
+
+    .btn-outline {
+      border-color: rgba(34, 197, 94, 0.5);
+      background: rgba(0, 0, 0, 0.8);
+      color: #22c55e;
+    }
+
+    .btn-outline:hover {
+      border-color: #22c55e;
+      background: rgba(20, 83, 45, 0.5);
+      color: #86efac;
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+    }
+
+    .btn-primary {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .btn-primary:hover {
+      background: #22c55e;
+      color: black;
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="overlay" id="overlay">
+    <div class="content">
+      <h1>
+        <span>DIGITAL</span>
+        <span>RAIN</span>
+      </h1>
+      <p class="subtitle">The matrix has you...</p>
+      <div class="quote">
+        Follow the white rabbit
+      </div>
+      <div class="buttons">
+        <a href="https://github.com/joshmu" class="btn btn-primary">
+          EXIT MATRIX
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+
+    let drops = [];
+    const mouse = { x: 0, y: 0 };
+    let animationId = 0;
+
+    // ASCII characters to use
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*(){}[]<>?/|\\~`!+-=_';
+    const charArray = chars.split('');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initDrops();
+    }
+
+    function initDrops() {
+      drops = [];
+      const columnWidth = 20;
+      const columns = Math.floor(canvas.width / columnWidth);
+
+      for (let i = 0; i < columns; i++) {
+        const dropCount = Math.random() > 0.7 ? 2 : 1;
+        for (let j = 0; j < dropCount; j++) {
+          drops.push({
+            x: i * columnWidth + 10,
+            y: Math.random() * -canvas.height,
+            speed: Math.random() * 2 + 1,
+            length: Math.floor(Math.random() * 20) + 10,
+            chars: Array(30).fill('').map(() => charArray[Math.floor(Math.random() * charArray.length)]),
+            opacity: Math.random() * 0.5 + 0.5,
+          });
+        }
+      }
+    }
+
+    function handleMouseMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    }
+
+    function animate() {
+      // Fade effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'center';
+
+      drops.forEach((drop) => {
+        // Update position
+        drop.y += drop.speed;
+
+        // Reset if off screen
+        if (drop.y - drop.length * 20 > canvas.height) {
+          drop.y = -drop.length * 20;
+          drop.chars = drop.chars.map(() => charArray[Math.floor(Math.random() * charArray.length)]);
+        }
+
+        // Mouse interaction - repel drops
+        const dx = drop.x - mouse.x;
+        const dy = drop.y - mouse.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 100) {
+          const force = (100 - distance) / 100;
+          drop.x += (dx / distance) * force * 5;
+        } else {
+          // Slowly return to original column
+          const targetX = Math.floor(drop.x / 20) * 20 + 10;
+          drop.x += (targetX - drop.x) * 0.02;
+        }
+
+        // Draw characters
+        drop.chars.forEach((char, index) => {
+          const charY = drop.y + index * 20;
+
+          if (charY > 0 && charY < canvas.height) {
+            // Calculate brightness based on position in drop
+            let brightness = 1;
+            if (index < 5) {
+              brightness = 1; // Head is brightest
+            } else if (index < drop.length) {
+              brightness = 1 - (index - 5) / (drop.length - 5) * 0.8;
+            } else {
+              brightness = 0.2;
+            }
+
+            // Green with varying brightness
+            const green = Math.floor(255 * brightness);
+            ctx.fillStyle = `rgba(0, ${green}, 0, ${drop.opacity * brightness})`;
+
+            // White head for some drops
+            if (index === 0 && Math.random() > 0.95) {
+              ctx.fillStyle = `rgba(255, 255, 255, ${drop.opacity})`;
+            }
+
+            // Randomly change character
+            if (Math.random() > 0.98) {
+              drop.chars[index] = charArray[Math.floor(Math.random() * charArray.length)];
+            }
+
+            ctx.fillText(char, drop.x, charY);
+          }
+        });
+      });
+
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Initialize
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    animate();
+
+    // Show overlay after a brief delay
+    setTimeout(() => {
+      overlay.classList.add('loaded');
+    }, 100);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(animationId);
+    });
+  </script>
+</body>
+</html>

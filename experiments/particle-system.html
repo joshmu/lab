@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Particle System - Interactive Animation</title>
+  <!--
+  ---
+  id: particle-system-001
+  title: Particle System
+  description: Interactive particle field with mouse attraction, featuring dynamic connections and fluid motion physics.
+  category: interactive-animations
+  tags: [particles, physics, mouse-interaction, canvas, animation]
+  difficulty: intermediate
+  author: Josh Mu
+  created: 2025-01-15
+  updated: 2025-01-20
+  estimatedTime: 45 mins
+  prerequisites: [Basic JavaScript, Canvas API, Basic physics concepts]
+  learningObjectives:
+    - Implement particle physics simulation
+    - Handle mouse interaction with canvas elements
+    - Create dynamic particle connections
+    - Optimize canvas animation performance
+    - Apply force-based physics to UI elements
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: #0a0a0a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+
+    .overlay.loaded {
+      opacity: 1;
+    }
+
+    .content {
+      text-align: center;
+      z-index: 10;
+      padding: 2rem;
+      max-width: 64rem;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    .title-line {
+      display: block;
+      font-size: 6rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa, #22d3ee);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradient 3s ease infinite;
+    }
+
+    .title-line:nth-child(2) {
+      background: linear-gradient(90deg, #22d3ee, #60a5fa, #a78bfa);
+      animation-delay: 200ms;
+    }
+
+    @keyframes gradient {
+      0%, 100% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      color: #d1d5db;
+      font-weight: 300;
+      letter-spacing: 0.025em;
+      margin-bottom: 2rem;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      pointer-events: all;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      min-height: 2.75rem;
+    }
+
+    .btn-outline {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #111827;
+    }
+
+    .btn-primary:hover {
+      background: #e9d5ff;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .title-line {
+        font-size: 4rem;
+      }
+      .subtitle {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="overlay" id="overlay">
+    <div class="content">
+      <h1>
+        <span class="title-line">Experimental</span>
+        <span class="title-line">Laboratory</span>
+      </h1>
+      <p class="subtitle">Where particles dance and ideas collide</p>
+      <div class="buttons">
+        <a href="https://github.com/joshmu" class="btn btn-outline">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+
+    let particles = [];
+    let animationId = 0;
+    const mouse = { x: 0, y: 0 };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initParticles();
+    }
+
+    function initParticles() {
+      particles = [];
+      const particleCount = Math.floor((canvas.width * canvas.height) / 8000);
+
+      for (let i = 0; i < particleCount; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+
+        particles.push({
+          x: x,
+          y: y,
+          vx: 0,
+          vy: 0,
+          radius: Math.random() * 2 + 1,
+          color: `hsl(${Math.random() * 60 + 200}, 70%, 50%)`,
+          baseX: x,
+          baseY: y,
+        });
+      }
+    }
+
+    function handleMouseMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    }
+
+    function animate() {
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle) => {
+        const dx = mouse.x - particle.x;
+        const dy = mouse.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 150;
+
+        if (distance < maxDistance) {
+          const force = (maxDistance - distance) / maxDistance;
+          const angle = Math.atan2(dy, dx);
+          particle.vx -= Math.cos(angle) * force * 2;
+          particle.vy -= Math.sin(angle) * force * 2;
+        }
+
+        // Return to base position
+        particle.vx += (particle.baseX - particle.x) * 0.01;
+        particle.vy += (particle.baseY - particle.y) * 0.01;
+
+        // Apply friction
+        particle.vx *= 0.95;
+        particle.vy *= 0.95;
+
+        // Update position
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Draw particle
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = particle.color;
+        ctx.fill();
+
+        // Draw connections
+        particles.forEach((otherParticle) => {
+          const dx = otherParticle.x - particle.x;
+          const dy = otherParticle.y - particle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 100 && distance > 0) {
+            ctx.beginPath();
+            ctx.moveTo(particle.x, particle.y);
+            ctx.lineTo(otherParticle.x, otherParticle.y);
+            ctx.strokeStyle = `rgba(100, 200, 255, ${1 - distance / 100})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        });
+      });
+
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Initialize
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    animate();
+
+    // Show overlay after a brief delay
+    setTimeout(() => {
+      overlay.classList.add('loaded');
+    }, 100);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(animationId);
+    });
+  </script>
+</body>
+</html>

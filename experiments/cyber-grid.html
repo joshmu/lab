@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Grid - Interactive 3D Animation</title>
+  <!--
+  ---
+  id: cyber-grid-003
+  title: Cyber Grid
+  description: 3D perspective grid with cyberpunk aesthetics, featuring dynamic depth perception and futuristic visual effects.
+  category: interactive-animations
+  tags: [3d, grid, cyberpunk, perspective, futuristic, wireframe]
+  difficulty: intermediate
+  author: Josh Mu
+  created: 2025-01-17
+  updated: 2025-01-22
+  estimatedTime: 50 mins
+  prerequisites: [Basic 3D math concepts, Canvas API knowledge, Understanding of perspective projection]
+  learningObjectives:
+    - Implement 3D perspective projection
+    - Create dynamic grid animations
+    - Apply cyberpunk visual aesthetics
+    - Handle 3D transformations in 2D canvas
+    - Optimize 3D rendering performance
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: #0a0a0f;
+      font-family: 'Courier New', monospace;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .overlay.loaded {
+      opacity: 1;
+    }
+
+    .content {
+      text-align: center;
+      z-index: 10;
+      padding: 2rem;
+      max-width: 64rem;
+    }
+
+    h1 {
+      font-size: 6rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: #22d3ee;
+      margin-bottom: 1rem;
+      animation: glitch 2s infinite;
+      position: relative;
+    }
+
+    h1::before,
+    h1::after {
+      content: 'CYBER GRID';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    h1::before {
+      animation: glitch-1 0.5s infinite;
+      color: #00ffff;
+      z-index: -1;
+    }
+
+    h1::after {
+      animation: glitch-2 0.5s infinite;
+      color: #ff00ff;
+      z-index: -2;
+    }
+
+    @keyframes glitch {
+      0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.8); }
+      20% { text-shadow: 3px 0 10px rgba(255, 0, 255, 0.8); }
+      40% { text-shadow: -3px 0 10px rgba(0, 255, 255, 0.8); }
+      60% { text-shadow: 0 0 10px rgba(255, 0, 255, 0.8); }
+      80% { text-shadow: 3px 0 10px rgba(0, 255, 255, 0.8); }
+    }
+
+    @keyframes glitch-1 {
+      0%, 100% { clip: rect(0, 9999px, 9999px, 0); transform: translate(0); }
+      20% { clip: rect(20px, 9999px, 60px, 0); transform: translate(-2px, 2px); }
+      40% { clip: rect(65px, 9999px, 120px, 0); transform: translate(2px, -2px); }
+      60% { clip: rect(0, 9999px, 40px, 0); transform: translate(1px, 0); }
+      80% { clip: rect(80px, 9999px, 9999px, 0); transform: translate(-1px, 1px); }
+    }
+
+    @keyframes glitch-2 {
+      0%, 100% { clip: rect(0, 9999px, 9999px, 0); transform: translate(0); }
+      20% { clip: rect(65px, 9999px, 120px, 0); transform: translate(2px, -1px); }
+      40% { clip: rect(0, 9999px, 40px, 0); transform: translate(-2px, 1px); }
+      60% { clip: rect(20px, 9999px, 60px, 0); transform: translate(-1px, -1px); }
+      80% { clip: rect(80px, 9999px, 9999px, 0); transform: translate(1px, 2px); }
+    }
+
+    .subtitle {
+      font-size: 1.5rem;
+      color: #22d3ee;
+      margin-bottom: 2rem;
+      animation: typing 2s steps(40, end);
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid #22d3ee;
+      display: inline-block;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    .badges {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      border-radius: 9999px;
+      border: 2px solid;
+      font-weight: bold;
+    }
+
+    .badge-cyan {
+      border-color: rgba(6, 182, 212, 0.5);
+      background: rgba(6, 182, 212, 0.1);
+      color: #22d3ee;
+    }
+
+    .badge-pink {
+      border-color: rgba(236, 72, 153, 0.5);
+      background: rgba(236, 72, 153, 0.1);
+      color: #f472b6;
+    }
+
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      pointer-events: all;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: 2px solid;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      min-height: 2.75rem;
+      transform: skewX(-10deg);
+    }
+
+    .btn:hover {
+      transform: skewX(0deg);
+    }
+
+    .btn-cyan {
+      border-color: rgba(6, 182, 212, 0.5);
+      background: rgba(8, 47, 73, 0.5);
+      color: #99f6ff;
+    }
+
+    .btn-cyan:hover {
+      border-color: #06b6d4;
+      background: rgba(8, 47, 73, 0.8);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 4rem;
+      }
+      .subtitle {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="overlay" id="overlay">
+    <div class="content">
+      <h1>CYBER GRID</h1>
+      <p class="subtitle">Navigate the digital frontier_</p>
+      <div class="badges">
+        <div class="badge badge-cyan">
+          <span class="pulse">⚡</span>
+          <span style="opacity: 0.7; font-size: 0.65rem;">SYSTEM</span>
+          <span>ONLINE</span>
+        </div>
+        <div class="badge badge-pink">
+          <span style="opacity: 0.7; font-size: 0.65rem;">MATRIX</span>
+          <span>ACTIVE</span>
+        </div>
+      </div>
+      <div class="buttons">
+        <a href="https://github.com/joshmu" class="btn btn-cyan">
+          <span>GITHUB</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+
+    let grid = [];
+    let animationId = 0;
+    const mouse = { x: 0, y: 0 };
+    let time = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initGrid();
+    }
+
+    function initGrid() {
+      grid = [];
+      const gridSize = 30;
+      const spacing = 40;
+      const startX = -((gridSize - 1) * spacing) / 2;
+      const startY = -((gridSize - 1) * spacing) / 2;
+
+      for (let i = 0; i < gridSize; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridSize; j++) {
+          grid[i][j] = {
+            x: startX + j * spacing,
+            y: startY + i * spacing,
+            z: 0,
+            originalZ: 0,
+          };
+        }
+      }
+    }
+
+    function handleMouseMove(e) {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = (e.clientX - rect.left - canvas.width / 2) / (canvas.width / 2);
+      mouse.y = (e.clientY - rect.top - canvas.height / 2) / (canvas.height / 2);
+    }
+
+    function project3D(point, centerX, centerY, perspective) {
+      const scale = perspective / (perspective + point.z);
+      return {
+        x: centerX + point.x * scale,
+        y: centerY + point.y * scale,
+        scale: scale,
+      };
+    }
+
+    function animate() {
+      time += 0.01;
+
+      ctx.fillStyle = 'rgba(10, 10, 15, 0.95)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const perspective = 800;
+
+      // Update grid based on mouse position
+      grid.forEach((row, i) => {
+        row.forEach((point, j) => {
+          // Wave effect
+          const waveX = Math.sin(time + i * 0.1) * 20;
+          const waveY = Math.cos(time + j * 0.1) * 20;
+
+          // Mouse influence
+          const distFromCenter = Math.sqrt(
+            Math.pow((i - grid.length / 2) / grid.length, 2) +
+            Math.pow((j - row.length / 2) / row.length, 2)
+          );
+
+          const mouseInfluence = 100 * (1 - distFromCenter);
+          point.z = point.originalZ + waveX + waveY +
+                   mouse.x * mouseInfluence * 0.5 +
+                   mouse.y * mouseInfluence * 0.5;
+        });
+      });
+
+      // Draw grid lines
+      ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+
+      // Horizontal lines
+      grid.forEach((row) => {
+        ctx.beginPath();
+        row.forEach((point, index) => {
+          const projected = project3D(point, centerX, centerY, perspective);
+          if (index === 0) {
+            ctx.moveTo(projected.x, projected.y);
+          } else {
+            ctx.lineTo(projected.x, projected.y);
+          }
+        });
+        ctx.stroke();
+      });
+
+      // Vertical lines
+      for (let j = 0; j < grid[0].length; j++) {
+        ctx.beginPath();
+        grid.forEach((row, index) => {
+          const projected = project3D(row[j], centerX, centerY, perspective);
+          if (index === 0) {
+            ctx.moveTo(projected.x, projected.y);
+          } else {
+            ctx.lineTo(projected.x, projected.y);
+          }
+        });
+        ctx.stroke();
+      }
+
+      // Draw glowing nodes at intersections
+      grid.forEach((row, i) => {
+        row.forEach((point, j) => {
+          if (i % 3 === 0 && j % 3 === 0) {
+            const projected = project3D(point, centerX, centerY, perspective);
+
+            // Outer glow
+            const gradient = ctx.createRadialGradient(
+              projected.x, projected.y, 0,
+              projected.x, projected.y, 10 * projected.scale
+            );
+            gradient.addColorStop(0, 'rgba(255, 0, 255, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(
+              projected.x - 20 * projected.scale,
+              projected.y - 20 * projected.scale,
+              40 * projected.scale,
+              40 * projected.scale
+            );
+
+            // Inner node
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(
+              projected.x - 2 * projected.scale,
+              projected.y - 2 * projected.scale,
+              4 * projected.scale,
+              4 * projected.scale
+            );
+          }
+        });
+      });
+
+      // Add scan line effect
+      const scanLineY = (time * 100) % canvas.height;
+      ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+      ctx.fillRect(0, scanLineY, canvas.width, 2);
+
+      // Add glow at scan line position
+      const scanGradient = ctx.createLinearGradient(0, scanLineY - 20, 0, scanLineY + 20);
+      scanGradient.addColorStop(0, 'rgba(0, 255, 255, 0)');
+      scanGradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.2)');
+      scanGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+      ctx.fillStyle = scanGradient;
+      ctx.fillRect(0, scanLineY - 20, canvas.width, 40);
+
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Initialize
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    animate();
+
+    // Show overlay after a brief delay
+    setTimeout(() => {
+      overlay.classList.add('loaded');
+    }, 100);
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(animationId);
+    });
+  </script>
+</body>
+</html>
