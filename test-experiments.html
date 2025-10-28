@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Experiment Test Runner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: #e5e5e5;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: #222;
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #333;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #10b981;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #888;
+    }
+
+    .experiment-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .experiment-item {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #333;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .experiment-item:hover {
+      background: #2a2a2a;
+    }
+
+    .experiment-item.active {
+      background: #10b981;
+      color: white;
+    }
+
+    .experiment-item.active .experiment-category {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .experiment-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .experiment-category {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .difficulty {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.625rem;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+
+    .difficulty.beginner {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .difficulty.intermediate {
+      background: rgba(251, 146, 60, 0.2);
+      color: #fdba74;
+    }
+
+    .difficulty.advanced {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0a0a0a;
+    }
+
+    .toolbar {
+      padding: 1rem 1.5rem;
+      background: #222;
+      border-bottom: 1px solid #333;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .current-experiment {
+      flex: 1;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.25rem;
+      background: #333;
+      color: #e5e5e5;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #444;
+    }
+
+    .btn-primary {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #059669;
+    }
+
+    .iframe-container {
+      flex: 1;
+      position: relative;
+      background: white;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      color: #888;
+      font-size: 1.125rem;
+    }
+
+    .stats {
+      padding: 1rem 1.5rem;
+      background: #222;
+      border-top: 1px solid #333;
+      font-size: 0.875rem;
+      display: flex;
+      gap: 2rem;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-label {
+      color: #888;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: #10b981;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="header">
+      <h1>🧪 Experiment Tester</h1>
+      <p class="subtitle">Test all experiments</p>
+    </div>
+    <div class="experiment-list" id="experimentList"></div>
+  </div>
+
+  <div class="main">
+    <div class="toolbar">
+      <div class="current-experiment" id="currentExperiment">Select an experiment to test</div>
+      <button class="btn" id="reloadBtn">🔄 Reload</button>
+      <button class="btn btn-primary" id="openNewTabBtn">↗ Open in New Tab</button>
+    </div>
+
+    <div class="iframe-container">
+      <div class="loading" id="loading">Select an experiment to begin testing</div>
+      <iframe id="experimentFrame" style="display: none;"></iframe>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-label">Total:</span>
+        <span class="stat-value" id="totalCount">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Tested:</span>
+        <span class="stat-value" id="testedCount">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Current Category:</span>
+        <span class="stat-value" id="currentCategory">-</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const experiments = [
+      { name: 'color-palette-generator.html', title: 'Color Palette Generator', category: 'design-tools', difficulty: 'beginner' },
+      { name: 'game-of-life.html', title: "Conway's Game of Life", category: 'simulation', difficulty: 'intermediate' },
+      { name: 'bezier-curve-tool.html', title: 'Bezier Curve Tool', category: 'drawing-tools', difficulty: 'intermediate' },
+      { name: 'audio-visualizer.html', title: 'Audio Visualizer', category: 'audio-tools', difficulty: 'intermediate' },
+      { name: 'maze-generator.html', title: 'Maze Generator & Solver', category: 'algorithm-visualization', difficulty: 'advanced' },
+      { name: 'perlin-noise-visualizer.html', title: 'Perlin Noise Visualizer', category: 'procedural-generation', difficulty: 'intermediate' },
+      { name: 'pomodoro-timer.html', title: 'Pomodoro Timer', category: 'productivity-tools', difficulty: 'beginner' },
+      { name: 'text-scrambler.html', title: 'Text Scrambler & Cipher', category: 'utility-tools', difficulty: 'beginner' },
+      { name: 'pixel-art-editor.html', title: 'Pixel Art Editor', category: 'creative-tools', difficulty: 'beginner' },
+      { name: 'image-ascii-converter.html', title: 'Image to ASCII Converter', category: 'image-processing', difficulty: 'intermediate' },
+      { name: 'particle-system.html', title: 'Particle System', category: 'interactive-animations', difficulty: 'intermediate' },
+      { name: 'liquid-morphing.html', title: 'Liquid Morphing', category: 'interactive-animations', difficulty: 'advanced' },
+      { name: 'cyber-grid.html', title: 'Cyber Grid', category: 'interactive-animations', difficulty: 'intermediate' },
+      { name: 'glitch-art.html', title: 'Glitch Art', category: 'interactive-animations', difficulty: 'advanced' },
+      { name: 'organic-evolution.html', title: 'Organic Evolution', category: 'interactive-animations', difficulty: 'advanced' },
+      { name: 'digital-rain.html', title: 'Digital Rain', category: 'interactive-animations', difficulty: 'beginner' }
+    ];
+
+    let currentExperiment = null;
+    const tested = new Set();
+
+    function renderExperimentList() {
+      const list = document.getElementById('experimentList');
+      list.innerHTML = experiments.map((exp, index) => `
+        <div class="experiment-item" data-index="${index}">
+          <div class="experiment-title">${exp.title}</div>
+          <div class="experiment-category">${exp.category}</div>
+          <span class="difficulty ${exp.difficulty}">${exp.difficulty}</span>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.experiment-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const index = parseInt(item.dataset.index);
+          loadExperiment(experiments[index]);
+        });
+      });
+
+      document.getElementById('totalCount').textContent = experiments.length;
+    }
+
+    function loadExperiment(experiment) {
+      currentExperiment = experiment;
+      tested.add(experiment.name);
+
+      // Update UI
+      document.querySelectorAll('.experiment-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.closest('.experiment-item').classList.add('active');
+
+      document.getElementById('currentExperiment').textContent = experiment.title;
+      document.getElementById('currentCategory').textContent = experiment.category;
+      document.getElementById('testedCount').textContent = tested.size;
+
+      // Load iframe
+      const iframe = document.getElementById('experimentFrame');
+      const loading = document.getElementById('loading');
+
+      loading.style.display = 'flex';
+      loading.textContent = `Loading ${experiment.title}...`;
+      iframe.style.display = 'none';
+
+      iframe.src = `experiments/${experiment.name}`;
+
+      iframe.onload = () => {
+        loading.style.display = 'none';
+        iframe.style.display = 'block';
+      };
+
+      iframe.onerror = () => {
+        loading.textContent = `❌ Failed to load ${experiment.title}`;
+      };
+    }
+
+    document.getElementById('reloadBtn').addEventListener('click', () => {
+      if (currentExperiment) {
+        const iframe = document.getElementById('experimentFrame');
+        iframe.src = iframe.src;
+      }
+    });
+
+    document.getElementById('openNewTabBtn').addEventListener('click', () => {
+      if (currentExperiment) {
+        window.open(`experiments/${currentExperiment.name}`, '_blank');
+      }
+    });
+
+    // Initialize
+    renderExperimentList();
+  </script>
+</body>
+</html>
