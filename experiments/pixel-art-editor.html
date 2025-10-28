@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Art Editor</title>
+  <!--
+  ---
+  id: pixel-art-editor-015
+  title: Pixel Art Editor
+  description: Simple pixel art creation tool with drawing, erasing, color picker, and export functionality for creating retro-style sprites and artwork.
+  category: creative-tools
+  tags: [pixel-art, drawing, editor, sprites, creative, tool]
+  difficulty: beginner
+  author: Josh Mu
+  created: 2025-01-26
+  updated: 2025-01-26
+  estimatedTime: 30 mins
+  prerequisites: [Canvas API, Mouse events, Color manipulation]
+  learningObjectives:
+    - Implement pixel-based drawing
+    - Handle mouse/touch input
+    - Create export functionality
+    - Build creative tools
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      padding: 1.5rem;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tool-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: 2px solid #ddd;
+      border-radius: 0.5rem;
+      background: white;
+      color: #333;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+
+    .btn.active {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+
+    .color-picker {
+      width: 60px;
+      height: 40px;
+      border: 2px solid #ddd;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+
+    .palette {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .palette-color {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #ddd;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .palette-color:hover {
+      transform: scale(1.1);
+    }
+
+    .palette-color.active {
+      border-color: #667eea;
+      border-width: 3px;
+    }
+
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      padding: 2rem;
+    }
+
+    canvas {
+      border: 2px solid #ddd;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      image-rendering: pixelated;
+      cursor: crosshair;
+    }
+
+    .info {
+      padding: 1rem 1.5rem;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.875rem;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Pixel Art Editor</h1>
+    <div class="toolbar">
+      <div class="tool-group">
+        <button class="btn active" id="drawBtn">✏️ Draw</button>
+        <button class="btn" id="eraseBtn">🧹 Erase</button>
+        <button class="btn" id="fillBtn">🪣 Fill</button>
+      </div>
+
+      <div class="tool-group">
+        <input type="color" id="colorPicker" class="color-picker" value="#000000">
+        <div class="palette" id="palette"></div>
+      </div>
+
+      <div class="tool-group">
+        <select id="sizeSelect" class="btn">
+          <option value="16">16x16</option>
+          <option value="32" selected>32x32</option>
+          <option value="64">64x64</option>
+        </select>
+      </div>
+
+      <div class="tool-group">
+        <button class="btn" id="clearBtn">Clear</button>
+        <button class="btn" id="exportBtn">Export PNG</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="info">
+    Click and drag to draw • Right-click to pick color from canvas
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let gridSize = 32;
+    let pixelSize = 16;
+    let currentColor = '#000000';
+    let tool = 'draw';
+    let isDrawing = false;
+    let grid = [];
+
+    const defaultPalette = [
+      '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF',
+      '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080'
+    ];
+
+    function initCanvas() {
+      canvas.width = gridSize * pixelSize;
+      canvas.height = gridSize * pixelSize;
+
+      // Initialize grid
+      grid = Array(gridSize).fill(null).map(() =>
+        Array(gridSize).fill('transparent')
+      );
+
+      drawGrid();
+    }
+
+    function drawGrid() {
+      // Draw background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw pixels
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          if (grid[row][col] !== 'transparent') {
+            ctx.fillStyle = grid[row][col];
+            ctx.fillRect(
+              col * pixelSize,
+              row * pixelSize,
+              pixelSize,
+              pixelSize
+            );
+          }
+        }
+      }
+
+      // Draw grid lines
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= gridSize; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * pixelSize, 0);
+        ctx.lineTo(i * pixelSize, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i * pixelSize);
+        ctx.lineTo(canvas.width, i * pixelSize);
+        ctx.stroke();
+      }
+    }
+
+    function draw(x, y) {
+      const col = Math.floor(x / pixelSize);
+      const row = Math.floor(y / pixelSize);
+
+      if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+        if (tool === 'draw') {
+          grid[row][col] = currentColor;
+        } else if (tool === 'erase') {
+          grid[row][col] = 'transparent';
+        } else if (tool === 'fill') {
+          floodFill(row, col, grid[row][col], currentColor);
+        }
+        drawGrid();
+      }
+    }
+
+    function floodFill(row, col, targetColor, fillColor) {
+      if (row < 0 || row >= gridSize || col < 0 || col >= gridSize) return;
+      if (grid[row][col] !== targetColor || grid[row][col] === fillColor) return;
+
+      grid[row][col] = fillColor;
+
+      floodFill(row - 1, col, targetColor, fillColor);
+      floodFill(row + 1, col, targetColor, fillColor);
+      floodFill(row, col - 1, targetColor, fillColor);
+      floodFill(row, col + 1, targetColor, fillColor);
+    }
+
+    function pickColor(x, y) {
+      const col = Math.floor(x / pixelSize);
+      const row = Math.floor(y / pixelSize);
+
+      if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+        if (grid[row][col] !== 'transparent') {
+          currentColor = grid[row][col];
+          document.getElementById('colorPicker').value = currentColor;
+          updatePaletteSelection();
+        }
+      }
+    }
+
+    function exportPNG() {
+      const link = document.createElement('a');
+      link.download = 'pixel-art.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function updatePaletteSelection() {
+      document.querySelectorAll('.palette-color').forEach(el => {
+        el.classList.remove('active');
+        if (el.style.backgroundColor === currentColor ||
+            rgbToHex(el.style.backgroundColor) === currentColor) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    function rgbToHex(rgb) {
+      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      if (!match) return rgb;
+
+      return '#' + [1, 2, 3].map(i =>
+        parseInt(match[i]).toString(16).padStart(2, '0')
+      ).join('');
+    }
+
+    // Mouse events
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 2) {
+        e.preventDefault();
+        pickColor(e.offsetX, e.offsetY);
+        return;
+      }
+
+      isDrawing = true;
+      draw(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDrawing && tool !== 'fill') {
+        draw(e.offsetX, e.offsetY);
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+    });
+
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+
+    // Palette
+    const paletteEl = document.getElementById('palette');
+    defaultPalette.forEach(color => {
+      const colorDiv = document.createElement('div');
+      colorDiv.className = 'palette-color';
+      colorDiv.style.backgroundColor = color;
+      colorDiv.onclick = () => {
+        currentColor = color;
+        document.getElementById('colorPicker').value = color;
+        updatePaletteSelection();
+      };
+      paletteEl.appendChild(colorDiv);
+    });
+
+    // Controls
+    document.getElementById('drawBtn').addEventListener('click', function() {
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      tool = 'draw';
+    });
+
+    document.getElementById('eraseBtn').addEventListener('click', function() {
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      tool = 'erase';
+    });
+
+    document.getElementById('fillBtn').addEventListener('click', function() {
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      tool = 'fill';
+    });
+
+    document.getElementById('colorPicker').addEventListener('input', (e) => {
+      currentColor = e.target.value;
+      updatePaletteSelection();
+    });
+
+    document.getElementById('sizeSelect').addEventListener('change', (e) => {
+      gridSize = parseInt(e.target.value);
+      pixelSize = 512 / gridSize;
+      initCanvas();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', initCanvas);
+    document.getElementById('exportBtn').addEventListener('click', exportPNG);
+
+    // Initialize
+    initCanvas();
+    updatePaletteSelection();
+  </script>
+</body>
+</html>

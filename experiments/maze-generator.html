@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maze Generator & Solver</title>
+  <!--
+  ---
+  id: maze-generator-011
+  title: Maze Generator & Solver
+  description: Generate perfect mazes using recursive backtracking algorithm and solve them with A* pathfinding visualization.
+  category: algorithm-visualization
+  tags: [maze, algorithm, pathfinding, a-star, backtracking, visualization]
+  difficulty: advanced
+  author: Josh Mu
+  created: 2025-01-26
+  updated: 2025-01-26
+  estimatedTime: 1.5 hours
+  prerequisites: [Algorithm knowledge, Graph traversal, Pathfinding basics]
+  learningObjectives:
+    - Implement maze generation algorithms
+    - Understand A* pathfinding
+    - Visualize algorithm execution
+    - Work with grid-based structures
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      padding: 1.5rem;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      color: #3b82f6;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    canvas {
+      border: 2px solid #333;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .info {
+      padding: 0.75rem 1.5rem;
+      background: #222;
+      border-top: 1px solid #333;
+      font-size: 0.875rem;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Maze Generator & Solver</h1>
+    <div class="controls">
+      <button class="btn btn-primary" id="generateBtn">Generate Maze</button>
+      <button class="btn btn-success" id="solveBtn">Solve Maze</button>
+      <button class="btn btn-secondary" id="clearBtn">Clear Path</button>
+      <select id="sizeSelect" class="btn btn-secondary">
+        <option value="20">Small (20x20)</option>
+        <option value="30" selected>Medium (30x30)</option>
+        <option value="40">Large (40x40)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="info">
+    Blue = Start | Red = End | Yellow = Generating | Green = Solution
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let gridSize = 30;
+    let cellSize = 20;
+    let grid = [];
+    let solving = false;
+
+    canvas.width = gridSize * cellSize;
+    canvas.height = gridSize * cellSize;
+
+    class Cell {
+      constructor(row, col) {
+        this.row = row;
+        this.col = col;
+        this.walls = { top: true, right: true, bottom: true, left: true };
+        this.visited = false;
+        this.inPath = false;
+      }
+
+      draw() {
+        const x = this.col * cellSize;
+        const y = this.row * cellSize;
+
+        // Fill
+        if (this.row === 0 && this.col === 0) {
+          ctx.fillStyle = '#3b82f6'; // Start
+        } else if (this.row === gridSize - 1 && this.col === gridSize - 1) {
+          ctx.fillStyle = '#ef4444'; // End
+        } else if (this.inPath) {
+          ctx.fillStyle = '#10b981'; // Solution path
+        } else if (this.visited) {
+          ctx.fillStyle = '#2a2a2a';
+        } else {
+          ctx.fillStyle = '#1a1a1a';
+        }
+        ctx.fillRect(x, y, cellSize, cellSize);
+
+        // Walls
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        if (this.walls.top) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + cellSize, y);
+        }
+        if (this.walls.right) {
+          ctx.moveTo(x + cellSize, y);
+          ctx.lineTo(x + cellSize, y + cellSize);
+        }
+        if (this.walls.bottom) {
+          ctx.moveTo(x, y + cellSize);
+          ctx.lineTo(x + cellSize, y + cellSize);
+        }
+        if (this.walls.left) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y + cellSize);
+        }
+
+        ctx.stroke();
+      }
+    }
+
+    function initGrid() {
+      grid = [];
+      for (let row = 0; row < gridSize; row++) {
+        grid[row] = [];
+        for (let col = 0; col < gridSize; col++) {
+          grid[row][col] = new Cell(row, col);
+        }
+      }
+    }
+
+    function getNeighbors(cell) {
+      const neighbors = [];
+      const { row, col } = cell;
+
+      if (row > 0) neighbors.push({ cell: grid[row - 1][col], dir: 'top' });
+      if (col < gridSize - 1) neighbors.push({ cell: grid[row][col + 1], dir: 'right' });
+      if (row < gridSize - 1) neighbors.push({ cell: grid[row + 1][col], dir: 'bottom' });
+      if (col > 0) neighbors.push({ cell: grid[row][col - 1], dir: 'left' });
+
+      return neighbors;
+    }
+
+    function removeWalls(current, next) {
+      const dx = current.col - next.col;
+      const dy = current.row - next.row;
+
+      if (dx === 1) {
+        current.walls.left = false;
+        next.walls.right = false;
+      } else if (dx === -1) {
+        current.walls.right = false;
+        next.walls.left = false;
+      }
+
+      if (dy === 1) {
+        current.walls.top = false;
+        next.walls.bottom = false;
+      } else if (dy === -1) {
+        current.walls.bottom = false;
+        next.walls.top = false;
+      }
+    }
+
+    async function generateMaze() {
+      initGrid();
+      const stack = [];
+      const current = grid[0][0];
+      current.visited = true;
+      stack.push(current);
+
+      while (stack.length > 0) {
+        const current = stack[stack.length - 1];
+        const unvisitedNeighbors = getNeighbors(current)
+          .filter(n => !n.cell.visited);
+
+        if (unvisitedNeighbors.length > 0) {
+          const next = unvisitedNeighbors[Math.floor(Math.random() * unvisitedNeighbors.length)].cell;
+          next.visited = true;
+          removeWalls(current, next);
+          stack.push(next);
+        } else {
+          stack.pop();
+        }
+
+        draw();
+        await new Promise(resolve => setTimeout(resolve, 1));
+      }
+    }
+
+    async function solveMaze() {
+      if (solving) return;
+      solving = true;
+
+      // Clear previous path
+      grid.forEach(row => row.forEach(cell => cell.inPath = false));
+
+      const start = grid[0][0];
+      const end = grid[gridSize - 1][gridSize - 1];
+
+      const openSet = [start];
+      const cameFrom = new Map();
+      const gScore = new Map();
+      const fScore = new Map();
+
+      gScore.set(start, 0);
+      fScore.set(start, heuristic(start, end));
+
+      while (openSet.length > 0) {
+        // Find node with lowest fScore
+        let current = openSet[0];
+        let currentIndex = 0;
+        for (let i = 1; i < openSet.length; i++) {
+          if (fScore.get(openSet[i]) < fScore.get(current)) {
+            current = openSet[i];
+            currentIndex = i;
+          }
+        }
+
+        if (current === end) {
+          reconstructPath(cameFrom, current);
+          solving = false;
+          return;
+        }
+
+        openSet.splice(currentIndex, 1);
+
+        for (const neighbor of getWalkableNeighbors(current)) {
+          const tentativeGScore = gScore.get(current) + 1;
+
+          if (!gScore.has(neighbor) || tentativeGScore < gScore.get(neighbor)) {
+            cameFrom.set(neighbor, current);
+            gScore.set(neighbor, tentativeGScore);
+            fScore.set(neighbor, tentativeGScore + heuristic(neighbor, end));
+
+            if (!openSet.includes(neighbor)) {
+              openSet.push(neighbor);
+            }
+          }
+        }
+
+        draw();
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+
+      solving = false;
+    }
+
+    function heuristic(a, b) {
+      return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+    }
+
+    function getWalkableNeighbors(cell) {
+      const neighbors = [];
+      const { row, col } = cell;
+
+      if (!cell.walls.top && row > 0) neighbors.push(grid[row - 1][col]);
+      if (!cell.walls.right && col < gridSize - 1) neighbors.push(grid[row][col + 1]);
+      if (!cell.walls.bottom && row < gridSize - 1) neighbors.push(grid[row + 1][col]);
+      if (!cell.walls.left && col > 0) neighbors.push(grid[row][col - 1]);
+
+      return neighbors;
+    }
+
+    function reconstructPath(cameFrom, current) {
+      while (cameFrom.has(current)) {
+        current.inPath = true;
+        current = cameFrom.get(current);
+      }
+      draw();
+    }
+
+    function draw() {
+      grid.forEach(row => row.forEach(cell => cell.draw()));
+    }
+
+    // Controls
+    document.getElementById('generateBtn').addEventListener('click', generateMaze);
+    document.getElementById('solveBtn').addEventListener('click', solveMaze);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      grid.forEach(row => row.forEach(cell => cell.inPath = false));
+      draw();
+    });
+
+    document.getElementById('sizeSelect').addEventListener('change', (e) => {
+      gridSize = parseInt(e.target.value);
+      cellSize = Math.floor(600 / gridSize);
+      canvas.width = gridSize * cellSize;
+      canvas.height = gridSize * cellSize;
+      generateMaze();
+    });
+
+    // Initialize
+    generateMaze();
+  </script>
+</body>
+</html>

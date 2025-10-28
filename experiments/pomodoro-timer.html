@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <!--
+  ---
+  id: pomodoro-timer-013
+  title: Pomodoro Timer
+  description: Animated productivity timer using the Pomodoro Technique with work/break intervals, visual progress, and sound notifications.
+  category: productivity-tools
+  tags: [pomodoro, timer, productivity, animation, tool]
+  difficulty: beginner
+  author: Josh Mu
+  created: 2025-01-26
+  updated: 2025-01-26
+  estimatedTime: 30 mins
+  prerequisites: [Basic JavaScript, Timer functions, CSS animations]
+  learningObjectives:
+    - Implement timer functionality
+    - Create visual progress indicators
+    - Handle state management
+    - Build productivity tools
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      padding: 3rem;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .mode {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+
+    .timer-display {
+      position: relative;
+      margin: 2rem auto;
+      width: 300px;
+      height: 300px;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.2);
+      stroke-width: 10;
+    }
+
+    .progress-ring-progress {
+      fill: none;
+      stroke: white;
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s;
+    }
+
+    .time {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4rem;
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border: 2px solid white;
+      border-radius: 1rem;
+      background: transparent;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: white;
+      color: #667eea;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      margin-top: 0.25rem;
+    }
+
+    .settings {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .setting {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .setting input {
+      width: 60px;
+      padding: 0.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 0.25rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Pomodoro Timer</h1>
+    <div class="mode" id="mode">Focus Time</div>
+
+    <div class="timer-display">
+      <svg class="progress-ring" width="300" height="300">
+        <circle class="progress-ring-circle" cx="150" cy="150" r="140"></circle>
+        <circle class="progress-ring-progress" cx="150" cy="150" r="140" id="progress"></circle>
+      </svg>
+      <div class="time" id="time">25:00</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="startBtn">Start</button>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="settings">
+      <div class="setting">
+        <label>Focus:</label>
+        <input type="number" id="focusTime" value="25" min="1" max="60">
+        <span>min</span>
+      </div>
+      <div class="setting">
+        <label>Break:</label>
+        <input type="number" id="breakTime" value="5" min="1" max="30">
+        <span>min</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="completed">0</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="total">0</div>
+        <div class="stat-label">Total Time</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const circle = document.getElementById('progress');
+    const radius = circle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = circumference;
+
+    let focusMinutes = 25;
+    let breakMinutes = 5;
+    let timeLeft = focusMinutes * 60;
+    let totalTime = timeLeft;
+    let isRunning = false;
+    let isFocusMode = true;
+    let intervalId = null;
+    let completedSessions = 0;
+    let totalMinutes = 0;
+
+    function setProgress(percent) {
+      const offset = circumference - (percent / 100) * circumference;
+      circle.style.strokeDashoffset = offset;
+    }
+
+    function updateDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      document.getElementById('time').textContent =
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      const progress = ((totalTime - timeLeft) / totalTime) * 100;
+      setProgress(progress);
+    }
+
+    function playSound() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    function switchMode() {
+      isFocusMode = !isFocusMode;
+
+      if (isFocusMode) {
+        document.getElementById('mode').textContent = 'Focus Time';
+        totalTime = focusMinutes * 60;
+      } else {
+        document.getElementById('mode').textContent = 'Break Time';
+        completedSessions++;
+        totalMinutes += focusMinutes;
+        updateStats();
+        totalTime = breakMinutes * 60;
+      }
+
+      timeLeft = totalTime;
+      updateDisplay();
+      playSound();
+
+      // Auto-start next session
+      if (isRunning) {
+        start();
+      }
+    }
+
+    function start() {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+        isRunning = false;
+        document.getElementById('startBtn').textContent = 'Start';
+        return;
+      }
+
+      isRunning = true;
+      document.getElementById('startBtn').textContent = 'Pause';
+
+      intervalId = setInterval(() => {
+        timeLeft--;
+
+        if (timeLeft < 0) {
+          clearInterval(intervalId);
+          intervalId = null;
+          switchMode();
+        }
+
+        updateDisplay();
+      }, 1000);
+    }
+
+    function reset() {
+      clearInterval(intervalId);
+      intervalId = null;
+      isRunning = false;
+      isFocusMode = true;
+
+      focusMinutes = parseInt(document.getElementById('focusTime').value);
+      breakMinutes = parseInt(document.getElementById('breakTime').value);
+
+      totalTime = focusMinutes * 60;
+      timeLeft = totalTime;
+
+      document.getElementById('startBtn').textContent = 'Start';
+      document.getElementById('mode').textContent = 'Focus Time';
+      updateDisplay();
+    }
+
+    function updateStats() {
+      document.getElementById('completed').textContent = completedSessions;
+      document.getElementById('total').textContent = totalMinutes;
+    }
+
+    document.getElementById('startBtn').addEventListener('click', start);
+    document.getElementById('resetBtn').addEventListener('click', reset);
+
+    document.getElementById('focusTime').addEventListener('change', reset);
+    document.getElementById('breakTime').addEventListener('change', reset);
+
+    // Initialize
+    updateDisplay();
+    updateStats();
+  </script>
+</body>
+</html>

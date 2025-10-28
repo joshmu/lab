@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bezier Curve Drawing Tool</title>
+  <!--
+  ---
+  id: bezier-curve-tool-009
+  title: Bezier Curve Drawing Tool
+  description: Interactive Bezier curve editor with draggable control points, allowing creation of smooth cubic curves for design and animation.
+  category: drawing-tools
+  tags: [bezier, curves, vector, drawing, interactive, design]
+  difficulty: intermediate
+  author: Josh Mu
+  created: 2025-01-26
+  updated: 2025-01-26
+  estimatedTime: 45 mins
+  prerequisites: [Canvas API, Vector math, Mouse event handling]
+  learningObjectives:
+    - Understand Bezier curve mathematics
+    - Implement draggable UI elements
+    - Work with vector graphics
+    - Create design tools
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 1.5rem;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: 2px solid #667eea;
+      border-radius: 0.5rem;
+      background: white;
+      color: #667eea;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .slider {
+      width: 120px;
+    }
+
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+    }
+
+    canvas {
+      background: white;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      cursor: default;
+    }
+
+    .info {
+      padding: 1rem 1.5rem;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      font-size: 0.875rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .color-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Bezier Curve Drawing Tool</h1>
+    <div class="controls">
+      <button class="btn btn-primary" id="addCurveBtn">Add Curve</button>
+      <button class="btn" id="clearBtn">Clear All</button>
+
+      <div class="control-group">
+        <label>Line Width:</label>
+        <input type="range" class="slider" id="lineWidthSlider" min="1" max="10" value="3">
+        <span id="lineWidthValue">3</span>px
+      </div>
+
+      <div class="control-group">
+        <label>Show Points:</label>
+        <input type="checkbox" id="showPointsCheck" checked>
+      </div>
+
+      <div class="control-group">
+        <label>Animate:</label>
+        <input type="checkbox" id="animateCheck">
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="canvas" width="1000" height="600"></canvas>
+  </div>
+
+  <div class="info">
+    <div>Drag control points to shape the curve • Click "Add Curve" to create new curves</div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="color-box" style="background: #667eea;"></div>
+        <span>Start/End Points</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: #f59e0b;"></div>
+        <span>Control Points</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box" style="background: #10b981;"></div>
+        <span>Curve</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let curves = [];
+    let dragPoint = null;
+    let lineWidth = 3;
+    let showPoints = true;
+    let animate = false;
+    let animationT = 0;
+
+    class BezierCurve {
+      constructor(p0, p1, p2, p3) {
+        this.p0 = p0; // Start point
+        this.p1 = p1; // First control point
+        this.p2 = p2; // Second control point
+        this.p3 = p3; // End point
+      }
+
+      getPoint(t) {
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const mt = 1 - t;
+        const mt2 = mt * mt;
+        const mt3 = mt2 * mt;
+
+        return {
+          x: this.p0.x * mt3 + 3 * this.p1.x * mt2 * t + 3 * this.p2.x * mt * t2 + this.p3.x * t3,
+          y: this.p0.y * mt3 + 3 * this.p1.y * mt2 * t + 3 * this.p2.y * mt * t2 + this.p3.y * t3
+        };
+      }
+
+      draw() {
+        // Draw control lines
+        if (showPoints) {
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(this.p0.x, this.p0.y);
+          ctx.lineTo(this.p1.x, this.p1.y);
+          ctx.lineTo(this.p2.x, this.p2.y);
+          ctx.lineTo(this.p3.x, this.p3.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Draw curve
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(this.p0.x, this.p0.y);
+
+        for (let t = 0; t <= 1; t += 0.01) {
+          const p = this.getPoint(t);
+          ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+
+        // Draw animation point
+        if (animate) {
+          const p = this.getPoint(animationT);
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw control points
+        if (showPoints) {
+          // Start and end points
+          ctx.fillStyle = '#667eea';
+          ctx.beginPath();
+          ctx.arc(this.p0.x, this.p0.y, 8, 0, Math.PI * 2);
+          ctx.arc(this.p3.x, this.p3.y, 8, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Control points
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath();
+          ctx.arc(this.p1.x, this.p1.y, 8, 0, Math.PI * 2);
+          ctx.arc(this.p2.x, this.p2.y, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      getClosestPoint(x, y) {
+        const points = [
+          { p: this.p0, type: 'p0' },
+          { p: this.p1, type: 'p1' },
+          { p: this.p2, type: 'p2' },
+          { p: this.p3, type: 'p3' }
+        ];
+
+        for (const point of points) {
+          const dist = Math.hypot(point.p.x - x, point.p.y - y);
+          if (dist < 15) return { curve: this, pointType: point.type };
+        }
+
+        return null;
+      }
+    }
+
+    function addCurve() {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const offset = curves.length * 50;
+
+      curves.push(new BezierCurve(
+        { x: centerX - 200 + offset, y: centerY },
+        { x: centerX - 100 + offset, y: centerY - 100 },
+        { x: centerX + 100 + offset, y: centerY + 100 },
+        { x: centerX + 200 + offset, y: centerY }
+      ));
+
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      curves.forEach(curve => curve.draw());
+    }
+
+    function animationLoop() {
+      if (animate) {
+        animationT = (animationT + 0.005) % 1;
+        draw();
+      }
+      requestAnimationFrame(animationLoop);
+    }
+
+    // Mouse handling
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      for (const curve of curves) {
+        const point = curve.getClosestPoint(x, y);
+        if (point) {
+          dragPoint = point;
+          canvas.style.cursor = 'grabbing';
+          break;
+        }
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (dragPoint) {
+        dragPoint.curve[dragPoint.pointType] = { x, y };
+        draw();
+      } else {
+        let found = false;
+        for (const curve of curves) {
+          if (curve.getClosestPoint(x, y)) {
+            found = true;
+            break;
+          }
+        }
+        canvas.style.cursor = found ? 'grab' : 'default';
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      dragPoint = null;
+      canvas.style.cursor = 'default';
+    });
+
+    // Controls
+    document.getElementById('addCurveBtn').addEventListener('click', addCurve);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      curves = [];
+      draw();
+    });
+
+    document.getElementById('lineWidthSlider').addEventListener('input', (e) => {
+      lineWidth = parseInt(e.target.value);
+      document.getElementById('lineWidthValue').textContent = lineWidth;
+      draw();
+    });
+
+    document.getElementById('showPointsCheck').addEventListener('change', (e) => {
+      showPoints = e.target.checked;
+      draw();
+    });
+
+    document.getElementById('animateCheck').addEventListener('change', (e) => {
+      animate = e.target.checked;
+      if (!animate) draw();
+    });
+
+    // Initialize
+    addCurve();
+    animationLoop();
+  </script>
+</body>
+</html>

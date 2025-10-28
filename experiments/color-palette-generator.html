@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Palette Generator</title>
+  <!--
+  ---
+  id: color-palette-gen-007
+  title: Color Palette Generator
+  description: Generate beautiful color palettes using various algorithms including complementary, analogous, triadic, and random generation.
+  category: design-tools
+  tags: [colors, design, palette, utility, tool]
+  difficulty: beginner
+  author: Josh Mu
+  created: 2025-01-26
+  updated: 2025-01-26
+  estimatedTime: 20 mins
+  prerequisites: [Basic JavaScript, Color theory basics]
+  learningObjectives:
+    - Understand HSL color space
+    - Generate harmonious color combinations
+    - Work with color manipulation
+    - Build practical design tools
+  ---
+  -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      color: #e5e5e5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+    }
+
+    .controls {
+      padding: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: #222;
+      border-bottom: 1px solid #333;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #333;
+      color: #e5e5e5;
+    }
+
+    .btn-secondary:hover {
+      background: #444;
+    }
+
+    .palette-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .palette {
+      flex: 1;
+      display: flex;
+    }
+
+    .color-block {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      min-height: 300px;
+    }
+
+    .color-block:hover {
+      flex: 1.5;
+    }
+
+    .color-info {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .color-code {
+      font-size: 1.25rem;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+
+    .color-name {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      margin-top: 0.25rem;
+    }
+
+    .copied {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      animation: fadeInOut 1s;
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    .info {
+      padding: 1rem 2rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: #888;
+      background: #222;
+    }
+
+    @media (max-width: 768px) {
+      .palette {
+        flex-direction: column;
+      }
+
+      .color-block {
+        min-height: 100px;
+      }
+
+      .color-block:hover {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Color Palette Generator</h1>
+    <p class="subtitle">Generate beautiful color harmonies</p>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" onclick="generateComplementary()">Complementary</button>
+    <button class="btn btn-primary" onclick="generateAnalogous()">Analogous</button>
+    <button class="btn btn-primary" onclick="generateTriadic()">Triadic</button>
+    <button class="btn btn-primary" onclick="generateMonochromatic()">Monochromatic</button>
+    <button class="btn btn-secondary" onclick="generateRandom()">Random</button>
+  </div>
+
+  <div class="palette-container">
+    <div class="palette" id="palette"></div>
+  </div>
+
+  <div class="info">
+    Click any color to copy its hex code • Space bar to generate random palette
+  </div>
+
+  <script>
+    let currentColors = [];
+
+    function hslToHex(h, s, l) {
+      l /= 100;
+      const a = s * Math.min(l, 1 - l) / 100;
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+
+    function generateComplementary() {
+      const baseHue = Math.random() * 360;
+      const saturation = 60 + Math.random() * 20;
+      const colors = [
+        { h: baseHue, s: saturation, l: 30 },
+        { h: baseHue, s: saturation, l: 50 },
+        { h: baseHue, s: saturation, l: 70 },
+        { h: (baseHue + 180) % 360, s: saturation, l: 50 },
+        { h: (baseHue + 180) % 360, s: saturation, l: 70 }
+      ];
+      displayPalette(colors);
+    }
+
+    function generateAnalogous() {
+      const baseHue = Math.random() * 360;
+      const saturation = 60 + Math.random() * 20;
+      const colors = [
+        { h: (baseHue - 30) % 360, s: saturation, l: 50 },
+        { h: (baseHue - 15) % 360, s: saturation, l: 60 },
+        { h: baseHue, s: saturation, l: 70 },
+        { h: (baseHue + 15) % 360, s: saturation, l: 60 },
+        { h: (baseHue + 30) % 360, s: saturation, l: 50 }
+      ];
+      displayPalette(colors);
+    }
+
+    function generateTriadic() {
+      const baseHue = Math.random() * 360;
+      const saturation = 65 + Math.random() * 15;
+      const colors = [
+        { h: baseHue, s: saturation, l: 40 },
+        { h: baseHue, s: saturation, l: 60 },
+        { h: (baseHue + 120) % 360, s: saturation, l: 50 },
+        { h: (baseHue + 240) % 360, s: saturation, l: 50 },
+        { h: (baseHue + 240) % 360, s: saturation, l: 70 }
+      ];
+      displayPalette(colors);
+    }
+
+    function generateMonochromatic() {
+      const baseHue = Math.random() * 360;
+      const saturation = 60 + Math.random() * 20;
+      const colors = [
+        { h: baseHue, s: saturation, l: 20 },
+        { h: baseHue, s: saturation, l: 35 },
+        { h: baseHue, s: saturation, l: 50 },
+        { h: baseHue, s: saturation, l: 65 },
+        { h: baseHue, s: saturation, l: 80 }
+      ];
+      displayPalette(colors);
+    }
+
+    function generateRandom() {
+      const colors = [];
+      for (let i = 0; i < 5; i++) {
+        colors.push({
+          h: Math.random() * 360,
+          s: 50 + Math.random() * 30,
+          l: 40 + Math.random() * 30
+        });
+      }
+      displayPalette(colors);
+    }
+
+    function displayPalette(colors) {
+      currentColors = colors;
+      const palette = document.getElementById('palette');
+      palette.innerHTML = '';
+
+      colors.forEach((color, index) => {
+        const hex = hslToHex(color.h, color.s, color.l);
+        const block = document.createElement('div');
+        block.className = 'color-block';
+        block.style.background = hex;
+
+        block.innerHTML = `
+          <div class="color-info">
+            <div class="color-code">${hex.toUpperCase()}</div>
+            <div class="color-name">HSL(${Math.round(color.h)}, ${Math.round(color.s)}%, ${Math.round(color.l)}%)</div>
+          </div>
+        `;
+
+        block.onclick = () => copyToClipboard(hex, block);
+        palette.appendChild(block);
+      });
+    }
+
+    function copyToClipboard(text, element) {
+      navigator.clipboard.writeText(text).then(() => {
+        const copied = document.createElement('div');
+        copied.className = 'copied';
+        copied.textContent = 'Copied!';
+        element.appendChild(copied);
+        setTimeout(() => copied.remove(), 1000);
+      });
+    }
+
+    // Keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault();
+        generateRandom();
+      }
+    });
+
+    // Initialize with a random palette
+    generateComplementary();
+  </script>
+</body>
+</html>
