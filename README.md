@@ -142,35 +142,45 @@ else:
                 else:
                     print("*No description available.*")
         elif readme_path.exists():
-            # Generate new summary using llm command
+            # Try to generate new summary using llm command
             prompt = """Summarize this research project concisely. Write just 1 paragraph (3-5 sentences) followed by an optional short bullet list if there are key findings. Vary your opening - don't start with "This report" or "This research". Include 1-2 links to key tools/projects. Be specific but brief. No emoji."""
-            result = subprocess.run(
-                ['llm', '-m', MODEL, '-s', prompt],
-                stdin=open(readme_path),
-                capture_output=True,
-                text=True,
-                timeout=60
-            )
-            if result.returncode != 0:
-                error_msg = f"LLM command failed for {dirname} with return code {result.returncode}"
-                if result.stderr:
-                    error_msg += f"\nStderr: {result.stderr}"
-                raise RuntimeError(error_msg)
-            if result.stdout.strip():
-                description = result.stdout.strip()
-                print(description)
-                # Save to cache file
-                with open(summary_path, 'w') as f:
-                    f.write(description + '\n')
-            else:
-                raise RuntimeError(f"LLM command returned no output for {dirname}")
+            try:
+                result = subprocess.run(
+                    ['llm', '-m', MODEL, '-s', prompt],
+                    stdin=open(readme_path),
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    description = result.stdout.strip()
+                    print(description)
+                    # Save to cache file
+                    with open(summary_path, 'w') as f:
+                        f.write(description + '\n')
+                else:
+                    # LLM failed, show README exists but needs manual summary
+                    print(f"*README.md exists. [View project]({github_url or dirname}) to learn more. Run `llm -m {MODEL}` locally to generate summary.*")
+            except Exception as e:
+                # LLM command failed or not available
+                print(f"*README.md exists. [View project]({github_url or dirname}) to learn more. Install llm CLI tool to generate automated summaries.*")
         else:
             print("*No README.md found - add one to have this project included in automated summaries.*")
 
         print()  # Add blank line between entries
 
 ]]]-->
-*No research projects yet. Create a new directory at the root level to start your first research project!*
+### [example-research-project](https://github.com/joshmu/lab/tree/main/example-research-project) (2025-11-11)
+
+This example project demonstrates the integration of Simon Willison's research repository architecture into the Lab monorepo, enabling AI-driven research projects to coexist with the Turborepo workspace. The architecture provides flat directory structure for research projects, AGENTS.md workflow guidelines, automated documentation generation via cogapp, and GitHub Actions automation for README updates. Key benefits include clear separation between monorepo code and research, self-contained projects, and AI-friendly workflows compatible with both Claude Code and GitHub Copilot. See [AGENTS.md](./AGENTS.md) for complete workflow guidelines and [cogapp](https://nedbatchelder.com/code/cog/) for documentation automation details.
+
+**Key features:**
+- Flat directory structure for independent research projects
+- AGENTS.md provides comprehensive AI agent guidelines
+- CLAUDE.md symlinks to AGENTS.md for compatibility
+- GitHub Actions workflow for automated README generation
+- Graceful fallback when LLM tools aren't available
+
 <!--[[[end]]]-->
 
 ---
