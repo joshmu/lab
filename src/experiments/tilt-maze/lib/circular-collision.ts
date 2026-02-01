@@ -255,7 +255,8 @@ export function checkCircularWallCollision(
     );
 
     // Check adjacent cell's inner wall
-    if (adjCell.innerWall && dist - ball.radius < innerRadius) {
+    // Skip for ring 0 - the center boundary check already handles goal entry correctly
+    if (ring > 0 && adjCell.innerWall && dist - ball.radius < innerRadius) {
       if (isAngleInArc(ballAngle, adjStart, adjEnd, angularTolerance)) {
         return {
           collided: true,
