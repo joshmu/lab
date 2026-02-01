@@ -22,9 +22,7 @@ export function formatDate(dateString: string): string {
 /**
  * Get unique tags from a list of experiments
  */
-export function getUniqueTags(
-  experiments: { tags: string[] }[]
-): string[] {
+export function getUniqueTags(experiments: { tags: string[] }[]): string[] {
   const tags = new Set<string>();
   experiments.forEach((exp) => exp.tags.forEach((tag) => tags.add(tag)));
   return Array.from(tags).sort();
