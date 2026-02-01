@@ -19,8 +19,8 @@ export interface PhysicsConfig {
 
 export const defaultPhysicsConfig: PhysicsConfig = {
   friction: 0.98,
-  maxSpeed: 10,
-  acceleration: 0.5,
+  maxSpeed: 6, // Reduced from 10 to prevent tunneling through walls
+  acceleration: 0.4, // Slightly reduced for better control
   bounceElasticity: 0.3,
 };
 

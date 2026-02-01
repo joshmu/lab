@@ -31,6 +31,7 @@ import {
 } from "./lib/physics";
 import {
   checkCircularWallCollision,
+  checkCircularCollisionWithSubsteps,
   resolveCircularCollision,
   isAtCircularGoal,
 } from "./lib/circular-collision";
@@ -92,27 +93,61 @@ export default function TiltMazeExperiment() {
       // Update physics
       ball = updateBall(ball, deltaTime, defaultPhysicsConfig);
 
-      // Check collisions with multiple iterations to prevent tunneling
+      // Check collisions with substeps to prevent tunneling through walls
+      // First check with substeps for any collision along the path
+      let lastContactNormal: { x: number; y: number } | null = null;
       const maxIterations = 3;
-      for (let i = 0; i < maxIterations; i++) {
-        const collision = checkCircularWallCollision(
-          ball,
-          state.maze,
-          state.centerX,
-          state.centerY
-        );
+      let hasCollided = false;
 
-        if (collision.collided) {
+      for (let i = 0; i < maxIterations; i++) {
+        // Use substep detection on first iteration to catch tunneling
+        const collision = i === 0
+          ? checkCircularCollisionWithSubsteps(
+              ball,
+              prevBall,
+              state.maze,
+              state.centerX,
+              state.centerY,
+              4 // substeps
+            )
+          : checkCircularWallCollision(
+              ball,
+              state.maze,
+              state.centerX,
+              state.centerY
+            );
+
+        if (collision.collided && collision.normal) {
+          // Only reflect velocity on the FIRST collision to prevent oscillation
+          // Subsequent iterations only correct position
+          const shouldReflectVelocity = !hasCollided;
           ball = resolveCircularCollision(
             ball,
             collision,
-            defaultPhysicsConfig.bounceElasticity
+            defaultPhysicsConfig.bounceElasticity,
+            shouldReflectVelocity
           );
-          if (hapticsEnabled && i === 0) {
+          lastContactNormal = collision.normal;
+          if (hapticsEnabled && !hasCollided) {
             vibrateOnCollision();
           }
+          hasCollided = true;
         } else {
           break;
+        }
+      }
+
+      // If ball is in contact with a wall, clamp velocity pointing into the wall
+      // This prevents oscillation when continuously tilting toward a wall
+      if (lastContactNormal) {
+        const dot = ball.vx * lastContactNormal.x + ball.vy * lastContactNormal.y;
+        if (dot < 0) {
+          // Remove velocity component going into wall (allows sliding along wall)
+          ball = {
+            ...ball,
+            vx: ball.vx - dot * lastContactNormal.x,
+            vy: ball.vy - dot * lastContactNormal.y,
+          };
         }
       }
 

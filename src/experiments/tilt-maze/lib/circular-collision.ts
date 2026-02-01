@@ -22,6 +22,130 @@ export interface CircularCollisionResult {
   penetration?: number;
 }
 
+/** Small margin to prevent floating-point precision issues causing strobing */
+const COLLISION_MARGIN = 0.5;
+
+/**
+ * Normalize angle to [0, 2*PI) range
+ */
+function normalizeAngle(angle: number): number {
+  let a = angle % (2 * Math.PI);
+  if (a < 0) a += 2 * Math.PI;
+  return a;
+}
+
+/**
+ * Check if an angle is within an arc segment, handling wraparound
+ * Returns true if angle is between startAngle and endAngle
+ */
+function isAngleInArc(
+  angle: number,
+  startAngle: number,
+  endAngle: number,
+  tolerance: number = 0
+): boolean {
+  // Normalize all angles to [0, 2*PI)
+  const a = normalizeAngle(angle);
+  const start = normalizeAngle(startAngle);
+  const end = normalizeAngle(endAngle);
+
+  // Expand the arc by tolerance (for ball radius)
+  const expandedStart = normalizeAngle(start - tolerance);
+  const expandedEnd = normalizeAngle(end + tolerance);
+
+  // Handle wraparound case
+  if (expandedStart <= expandedEnd) {
+    return a >= expandedStart && a <= expandedEnd;
+  } else {
+    // Arc crosses the 0/2*PI boundary
+    return a >= expandedStart || a <= expandedEnd;
+  }
+}
+
+/**
+ * Check collision with a radial wall (spoke) at a given angle
+ * Returns collision result with proper normal direction based on which side ball is on
+ */
+function checkRadialWallCollision(
+  ball: Ball,
+  centerX: number,
+  centerY: number,
+  wallAngle: number,
+  innerRadius: number,
+  outerRadius: number,
+  ballDist: number
+): CircularCollisionResult {
+  // Wall direction vector (from center outward)
+  const wallDirX = Math.cos(wallAngle);
+  const wallDirY = Math.sin(wallAngle);
+
+  // Vector from center to ball
+  const toBallX = ball.x - centerX;
+  const toBallY = ball.y - centerY;
+
+  // The signed distance from ball to the wall LINE (not segment)
+  // Perpendicular to wall: rotate wall direction 90 degrees counter-clockwise
+  // This gives us (-sin(angle), cos(angle))
+  // Positive distance = ball is counter-clockwise from wall
+  // Negative distance = ball is clockwise from wall
+  const perpX = -wallDirY; // -sin(wallAngle)
+  const perpY = wallDirX; // cos(wallAngle)
+
+  // Signed distance: positive if ball is on the counter-clockwise side
+  const signedDist = toBallX * perpX + toBallY * perpY;
+  const absDist = Math.abs(signedDist);
+
+  // Check if ball is close enough to the wall line
+  if (absDist >= ball.radius) {
+    return { collided: false };
+  }
+
+  // Check if ball is within the radial extent of the wall (between inner and outer radius)
+  // Use a small margin to catch edge cases
+  const radialMargin = ball.radius * 0.5;
+  if (ballDist < innerRadius - radialMargin || ballDist > outerRadius + radialMargin) {
+    return { collided: false };
+  }
+
+  // Also check endpoint collisions (corners where radial wall meets arc walls)
+  // Project ball onto wall line to find closest point
+  const projDist = toBallX * wallDirX + toBallY * wallDirY;
+
+  // If projection is outside wall segment, check distance to endpoints
+  if (projDist < innerRadius || projDist > outerRadius) {
+    // Clamp to wall segment
+    const clampedProj = Math.max(innerRadius, Math.min(outerRadius, projDist));
+    const closestX = centerX + wallDirX * clampedProj;
+    const closestY = centerY + wallDirY * clampedProj;
+
+    const toClosestX = ball.x - closestX;
+    const toClosestY = ball.y - closestY;
+    const distToClosest = Math.sqrt(toClosestX * toClosestX + toClosestY * toClosestY);
+
+    if (distToClosest < ball.radius && distToClosest > 0.001) {
+      // Collision with endpoint - normal points from endpoint to ball
+      return {
+        collided: true,
+        normal: { x: toClosestX / distToClosest, y: toClosestY / distToClosest },
+        penetration: ball.radius - distToClosest + COLLISION_MARGIN,
+      };
+    }
+    return { collided: false };
+  }
+
+  // Normal collision with wall line segment
+  // Normal points AWAY from wall, in the direction the ball is on
+  // This ensures we always push the ball away from the wall, not through it
+  const normalX = signedDist >= 0 ? perpX : -perpX;
+  const normalY = signedDist >= 0 ? perpY : -perpY;
+
+  return {
+    collided: true,
+    normal: { x: normalX, y: normalY },
+    penetration: ball.radius - absDist + COLLISION_MARGIN,
+  };
+}
+
 /**
  * Check collision with circular maze walls
  * Uses multiple substeps to prevent tunneling through walls
@@ -45,26 +169,30 @@ export function checkCircularWallCollision(
     return {
       collided: true,
       normal: { x: -radialX, y: -radialY }, // Push inward
-      penetration: dist + ball.radius - maze.totalRadius,
+      penetration: dist + ball.radius - maze.totalRadius + COLLISION_MARGIN,
     };
   }
 
   // Check center boundary (goal area boundary)
   // Only collide if the innermost ring has walls
   if (dist - ball.radius < maze.centerRadius) {
-    // Find which segment we're in relative to innermost ring
-    let angle = Math.atan2(dy, dx) + Math.PI / 2;
-    if (angle < 0) angle += 2 * Math.PI;
+    // Calculate ball angle and angular tolerance for innermost ring check
+    const ballAngleForCenter = Math.atan2(dy, dx);
+    const angularToleranceForCenter = dist > 0 ? ball.radius / dist : 0;
     const segCount = maze.segmentsPerRing[0];
-    const segment = Math.floor((angle / (2 * Math.PI)) * segCount) % segCount;
 
-    // Check if this segment has an inner wall
-    if (maze.cells[0][segment].innerWall) {
-      return {
-        collided: true,
-        normal: { x: radialX, y: radialY }, // Push outward
-        penetration: maze.centerRadius - (dist - ball.radius),
-      };
+    // Check all segments in innermost ring that the ball might touch
+    for (let seg = 0; seg < segCount; seg++) {
+      if (maze.cells[0][seg].innerWall) {
+        const { startAngle, endAngle } = getSegmentAngles(maze, 0, seg);
+        if (isAngleInArc(ballAngleForCenter, startAngle, endAngle, angularToleranceForCenter)) {
+          return {
+            collided: true,
+            normal: { x: radialX, y: radialY }, // Push outward
+            penetration: maze.centerRadius - (dist - ball.radius) + COLLISION_MARGIN,
+          };
+        }
+      }
     }
   }
 
@@ -79,81 +207,145 @@ export function checkCircularWallCollision(
   const { innerRadius, outerRadius } = getRingRadii(maze, ring);
   const { startAngle, endAngle } = getSegmentAngles(maze, ring, segment);
 
-  // Calculate angle of ball relative to center
-  let ballAngle = Math.atan2(dy, dx) + Math.PI / 2;
-  if (ballAngle < 0) ballAngle += 2 * Math.PI;
+  // Calculate angle of ball relative to center (in standard math coordinates)
+  const ballAngle = Math.atan2(dy, dx);
+
+  // Calculate angular tolerance based on ball radius at current distance
+  // This accounts for how much arc the ball's radius spans at this distance
+  const angularTolerance = dist > 0 ? ball.radius / dist : 0;
 
   // Check inner arc wall (toward center)
+  // Only collide if ball is within the angular span of this segment's wall
   if (cell.innerWall && dist - ball.radius < innerRadius) {
-    return {
-      collided: true,
-      normal: { x: radialX, y: radialY }, // Push outward
-      penetration: innerRadius - (dist - ball.radius),
-    };
+    if (isAngleInArc(ballAngle, startAngle, endAngle, angularTolerance)) {
+      return {
+        collided: true,
+        normal: { x: radialX, y: radialY }, // Push outward
+        penetration: innerRadius - (dist - ball.radius) + COLLISION_MARGIN,
+      };
+    }
   }
 
   // Check outer arc wall (away from center) - only for non-outermost ring
+  // Only collide if ball is within the angular span of this segment's wall
   if (ring < maze.rings - 1 && cell.outerWall && dist + ball.radius > outerRadius) {
-    return {
-      collided: true,
-      normal: { x: -radialX, y: -radialY }, // Push inward
-      penetration: dist + ball.radius - outerRadius,
-    };
+    if (isAngleInArc(ballAngle, startAngle, endAngle, angularTolerance)) {
+      return {
+        collided: true,
+        normal: { x: -radialX, y: -radialY }, // Push inward
+        penetration: dist + ball.radius - outerRadius + COLLISION_MARGIN,
+      };
+    }
   }
 
-  // Check radial walls (clockwise and counter-clockwise)
-  // Clockwise wall (at endAngle)
-  if (cell.cwWall) {
-    // Point on wall at same radius
-    const wallPointX = centerX + Math.cos(endAngle) * dist;
-    const wallPointY = centerY + Math.sin(endAngle) * dist;
+  // Check adjacent segments for arc walls the ball might be touching
+  // This handles cases where ball straddles segment boundaries
+  const segCount = maze.segmentsPerRing[ring];
+  const adjacentSegments = [
+    (segment + 1) % segCount, // clockwise neighbor
+    (segment - 1 + segCount) % segCount, // counter-clockwise neighbor
+  ];
 
-    // Distance from ball to wall line
-    const toBallX = ball.x - wallPointX;
-    const toBallY = ball.y - wallPointY;
+  for (const adjSeg of adjacentSegments) {
+    const adjCell = maze.cells[ring][adjSeg];
+    const { startAngle: adjStart, endAngle: adjEnd } = getSegmentAngles(
+      maze,
+      ring,
+      adjSeg
+    );
 
-    // Normal to wall (pointing counter-clockwise, into the cell)
-    const wallNormalX = -Math.sin(endAngle);
-    const wallNormalY = Math.cos(endAngle);
-
-    const distToWall = toBallX * wallNormalX + toBallY * wallNormalY;
-
-    if (distToWall < ball.radius && distToWall > -ball.radius * 2) {
-      // Check if we're within the arc segment radially
-      if (dist >= innerRadius && dist <= outerRadius) {
+    // Check adjacent cell's inner wall
+    if (adjCell.innerWall && dist - ball.radius < innerRadius) {
+      if (isAngleInArc(ballAngle, adjStart, adjEnd, angularTolerance)) {
         return {
           collided: true,
-          normal: { x: wallNormalX, y: wallNormalY }, // Push away from wall
-          penetration: ball.radius - distToWall,
+          normal: { x: radialX, y: radialY },
+          penetration: innerRadius - (dist - ball.radius) + COLLISION_MARGIN,
+        };
+      }
+    }
+
+    // Check adjacent cell's outer wall
+    if (ring < maze.rings - 1 && adjCell.outerWall && dist + ball.radius > outerRadius) {
+      if (isAngleInArc(ballAngle, adjStart, adjEnd, angularTolerance)) {
+        return {
+          collided: true,
+          normal: { x: -radialX, y: -radialY },
+          penetration: dist + ball.radius - outerRadius + COLLISION_MARGIN,
         };
       }
     }
   }
 
-  // Counter-clockwise wall (at startAngle) - check neighbor's ccwWall
+  // Check radial walls (clockwise and counter-clockwise)
+  // Clockwise wall (at endAngle)
+  if (cell.cwWall) {
+    const collision = checkRadialWallCollision(
+      ball,
+      centerX,
+      centerY,
+      endAngle,
+      innerRadius,
+      outerRadius,
+      dist
+    );
+    if (collision.collided) {
+      return collision;
+    }
+  }
+
+  // Counter-clockwise wall (at startAngle)
   if (cell.ccwWall) {
-    // Point on wall at same radius
-    const wallPointX = centerX + Math.cos(startAngle) * dist;
-    const wallPointY = centerY + Math.sin(startAngle) * dist;
+    const collision = checkRadialWallCollision(
+      ball,
+      centerX,
+      centerY,
+      startAngle,
+      innerRadius,
+      outerRadius,
+      dist
+    );
+    if (collision.collided) {
+      return collision;
+    }
+  }
 
-    // Distance from ball to wall line
-    const toBallX = ball.x - wallPointX;
-    const toBallY = ball.y - wallPointY;
+  // Also check radial walls of adjacent segments (handles balls near segment boundaries)
+  for (const adjSeg of adjacentSegments) {
+    const adjCell = maze.cells[ring][adjSeg];
+    const { startAngle: adjStart, endAngle: adjEnd } = getSegmentAngles(
+      maze,
+      ring,
+      adjSeg
+    );
 
-    // Normal to wall (pointing clockwise, into the cell)
-    const wallNormalX = Math.sin(startAngle);
-    const wallNormalY = -Math.cos(startAngle);
+    if (adjCell.cwWall) {
+      const collision = checkRadialWallCollision(
+        ball,
+        centerX,
+        centerY,
+        adjEnd,
+        innerRadius,
+        outerRadius,
+        dist
+      );
+      if (collision.collided) {
+        return collision;
+      }
+    }
 
-    const distToWall = toBallX * wallNormalX + toBallY * wallNormalY;
-
-    if (distToWall < ball.radius && distToWall > -ball.radius * 2) {
-      // Check if we're within the arc segment radially
-      if (dist >= innerRadius && dist <= outerRadius) {
-        return {
-          collided: true,
-          normal: { x: wallNormalX, y: wallNormalY }, // Push away from wall
-          penetration: ball.radius - distToWall,
-        };
+    if (adjCell.ccwWall) {
+      const collision = checkRadialWallCollision(
+        ball,
+        centerX,
+        centerY,
+        adjStart,
+        innerRadius,
+        outerRadius,
+        dist
+      );
+      if (collision.collided) {
+        return collision;
       }
     }
   }
@@ -163,11 +355,14 @@ export function checkCircularWallCollision(
 
 /**
  * Resolve a collision by bouncing the ball
+ * @param reflectVelocity - if false, only correct position without reflecting velocity
+ *                          (useful for secondary collision iterations to prevent oscillation)
  */
 export function resolveCircularCollision(
   ball: Ball,
   collision: CircularCollisionResult,
-  elasticity: number
+  elasticity: number,
+  reflectVelocity: boolean = true
 ): Ball {
   if (!collision.collided || !collision.normal || !collision.penetration) {
     return ball;
@@ -185,15 +380,22 @@ export function resolveCircularCollision(
   let newVx = ball.vx;
   let newVy = ball.vy;
 
-  // Only reflect velocity if moving into the wall
-  if (dotProduct < 0) {
-    // Reflect: v' = v - 2(v·n)n
-    newVx = ball.vx - 2 * dotProduct * normal.x;
-    newVy = ball.vy - 2 * dotProduct * normal.y;
+  // Only reflect velocity if moving into the wall AND reflectVelocity is true
+  if (reflectVelocity && dotProduct < 0) {
+    // Decompose velocity into normal and tangent components
+    // v_normal = (v dot n) * n (component toward/away from wall)
+    const vnX = dotProduct * normal.x;
+    const vnY = dotProduct * normal.y;
 
-    // Apply elasticity
-    newVx *= elasticity;
-    newVy *= elasticity;
+    // v_tangent = v - v_normal (component parallel to wall, preserved)
+    const vtX = ball.vx - vnX;
+    const vtY = ball.vy - vnY;
+
+    // Reflect only the normal component and apply elasticity to it
+    // v' = v_tangent - elasticity * v_normal
+    // This preserves tangential velocity (sliding) while bouncing the normal component
+    newVx = vtX - elasticity * vnX;
+    newVy = vtY - elasticity * vnY;
   }
 
   return {
