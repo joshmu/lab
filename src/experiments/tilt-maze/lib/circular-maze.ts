@@ -38,21 +38,19 @@ export function generateCircularMaze(
   const actualSeed = seed ?? Date.now();
   const random = createRandom(actualSeed);
 
-  const centerRadius = 30;
-  const ringWidth = 35;
-  const totalRadius = centerRadius + rings * ringWidth;
+  // Fixed total radius - ringWidth scales with number of rings
+  const totalRadius = 150;
+  const centerRadius = 25;
+  const ringWidth = (totalRadius - centerRadius) / rings;
 
-  // Calculate segments per ring (more segments in outer rings)
-  const baseSegments = 8;
+  // Calculate segments per ring
+  // Use consistent segment count so radial walls connect properly
+  // More segments for more rings to create proper maze paths
+  const baseSegments = Math.max(8, rings + 4);
   const segmentsPerRing: number[] = [];
   for (let r = 0; r < rings; r++) {
-    // Inner rings have fewer segments, outer rings have more
-    const ringRadius = centerRadius + (r + 0.5) * ringWidth;
-    const circumference = 2 * Math.PI * ringRadius;
-    const minSegmentArc = 25; // Minimum arc length per segment (smaller = more segments)
-    const segments = Math.max(baseSegments, Math.floor(circumference / minSegmentArc));
-    // Round to nice numbers that divide evenly
-    segmentsPerRing.push(Math.round(segments / 2) * 2);
+    // All rings have same segment count for proper wall alignment
+    segmentsPerRing.push(baseSegments);
   }
 
   // Initialize cells with all walls

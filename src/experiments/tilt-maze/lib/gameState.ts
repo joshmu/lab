@@ -32,14 +32,15 @@ export interface LevelConfig {
  * Difficulty increases with level
  */
 export function getLevelConfig(level: number): LevelConfig {
-  // Start with 6 rings, increase by 1 each level, cap at 10
-  const rings = Math.min(6 + Math.floor((level - 1) / 2), 10);
+  // Start with 6 rings, increase by 1 each level, cap at 12
+  // More rings = thinner paths = harder
+  const rings = Math.min(6 + Math.floor((level - 1) / 2), 12);
 
-  // Canvas size based on rings
-  const canvasSize = 360 + rings * 28;
+  // Fixed canvas size (maze is fixed at 150 radius)
+  const canvasSize = 320;
 
-  // Ball radius - smaller for more precision
-  const ballRadius = Math.max(4, 6 - level * 0.2);
+  // Ball radius - smaller for more rings to fit through paths
+  const ballRadius = Math.max(3, 5 - rings * 0.15);
 
   return {
     rings,

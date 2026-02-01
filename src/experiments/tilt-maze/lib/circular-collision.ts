@@ -213,8 +213,8 @@ export function checkCircularWallCollision(
   const angularTolerance = dist > 0 ? ball.radius / dist : 0;
 
   // Check inner arc wall (toward center)
-  // Only collide if ball is within the angular span of this segment's wall
-  if (cell.innerWall && dist - ball.radius < innerRadius) {
+  // Skip for ring 0 - the center boundary check already handles goal entry
+  if (ring > 0 && cell.innerWall && dist - ball.radius < innerRadius) {
     if (isAngleInArc(ballAngle, startAngle, endAngle, angularTolerance)) {
       return {
         collided: true,
