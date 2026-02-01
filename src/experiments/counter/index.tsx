@@ -26,11 +26,7 @@ export default function CounterExperiment() {
               <Minus className="h-4 w-4" />
             </Button>
 
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCount(0)}
-            >
+            <Button variant="outline" size="icon" onClick={() => setCount(0)}>
               <RotateCcw className="h-4 w-4" />
             </Button>
 
@@ -45,9 +41,9 @@ export default function CounterExperiment() {
         </CardContent>
       </Card>
 
-      <div className="text-sm text-muted-foreground max-w-md text-center">
+      <div className="text-muted-foreground max-w-md text-center text-sm">
         This experiment demonstrates basic React state management using the{" "}
-        <code className="bg-muted px-1.5 py-0.5 rounded">useState</code> hook.
+        <code className="bg-muted rounded px-1.5 py-0.5">useState</code> hook.
         Click the buttons to increment, decrement, or reset the counter.
       </div>
     </div>

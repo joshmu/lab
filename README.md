@@ -62,17 +62,17 @@ pnpm generate:registry
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server with Turbopack |
-| `pnpm build` | Generate registry and build for production |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm format` | Format code with Prettier |
-| `pnpm check-types` | Run TypeScript type checking |
-| `pnpm test` | Run tests with Vitest |
-| `pnpm generate:registry` | Regenerate experiments registry |
-| `pnpm validate` | Run all checks (lint, types, test, build) |
+| Command                  | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `pnpm dev`               | Start development server with Turbopack    |
+| `pnpm build`             | Generate registry and build for production |
+| `pnpm start`             | Start production server                    |
+| `pnpm lint`              | Run ESLint                                 |
+| `pnpm format`            | Format code with Prettier                  |
+| `pnpm check-types`       | Run TypeScript type checking               |
+| `pnpm test`              | Run tests with Vitest                      |
+| `pnpm generate:registry` | Regenerate experiments registry            |
+| `pnpm validate`          | Run all checks (lint, types, test, build)  |
 
 ## Stack
 

@@ -46,15 +46,15 @@ export default function GradientGeneratorExperiment() {
           />
 
           {/* Color inputs */}
-          <div className="flex gap-4 justify-center">
+          <div className="flex justify-center gap-4">
             <div className="flex flex-col items-center gap-2">
               <input
                 type="color"
                 value={colors[0]}
                 onChange={(e) => setColors([e.target.value, colors[1]])}
-                className="w-12 h-12 rounded cursor-pointer"
+                className="h-12 w-12 cursor-pointer rounded"
               />
-              <span className="text-xs text-muted-foreground font-mono">
+              <span className="text-muted-foreground font-mono text-xs">
                 {colors[0]}
               </span>
             </div>
@@ -64,9 +64,9 @@ export default function GradientGeneratorExperiment() {
                 type="color"
                 value={colors[1]}
                 onChange={(e) => setColors([colors[0], e.target.value])}
-                className="w-12 h-12 rounded cursor-pointer"
+                className="h-12 w-12 cursor-pointer rounded"
               />
-              <span className="text-xs text-muted-foreground font-mono">
+              <span className="text-muted-foreground font-mono text-xs">
                 {colors[1]}
               </span>
             </div>
@@ -74,7 +74,7 @@ export default function GradientGeneratorExperiment() {
 
           {/* Angle slider */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-muted-foreground text-center">
+            <label className="text-muted-foreground text-center text-sm">
               Angle: {angle}°
             </label>
             <input
@@ -93,20 +93,20 @@ export default function GradientGeneratorExperiment() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex justify-center gap-3">
             <Button variant="outline" onClick={regenerate}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="mr-2 h-4 w-4" />
               Randomize
             </Button>
             <Button onClick={copyToClipboard}>
               {copied ? (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
+                  <Check className="mr-2 h-4 w-4" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="mr-2 h-4 w-4" />
                   Copy CSS
                 </>
               )}
@@ -115,9 +115,9 @@ export default function GradientGeneratorExperiment() {
         </CardContent>
       </Card>
 
-      <div className="text-sm text-muted-foreground max-w-md text-center">
-        Generate beautiful CSS gradients by picking colors or clicking randomize.
-        Copy the CSS code to use in your projects.
+      <div className="text-muted-foreground max-w-md text-center text-sm">
+        Generate beautiful CSS gradients by picking colors or clicking
+        randomize. Copy the CSS code to use in your projects.
       </div>
     </div>
   );

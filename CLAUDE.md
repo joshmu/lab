@@ -34,12 +34,12 @@ pnpm validate         # Run all checks
 
 ```typescript
 interface ExperimentMeta {
-  slug: string;           // URL slug (should match folder name)
-  title: string;          // Display title
-  description: string;    // Brief description
-  tags: string[];         // Categorization tags
-  createdAt: string;      // ISO date string
-  updatedAt?: string;     // Optional update date
+  slug: string; // URL slug (should match folder name)
+  title: string; // Display title
+  description: string; // Brief description
+  tags: string[]; // Categorization tags
+  createdAt: string; // ISO date string
+  updatedAt?: string; // Optional update date
   status: "draft" | "published";
 }
 ```
@@ -47,18 +47,23 @@ interface ExperimentMeta {
 ## Architecture
 
 ### Key Files
+
 - `src/app/page.tsx` - Registry homepage
 - `src/app/experiments/[slug]/page.tsx` - Dynamic experiment routes
 - `src/experiments/registry.ts` - Auto-generated from experiment metadata
 - `scripts/generate-registry.ts` - Registry generation script
 
 ### Component Library
+
 Uses shadcn/ui components in `src/components/ui/`:
+
 - Button, Card, Badge (pre-installed)
 - Add more via `npx shadcn@latest add [component]`
 
 ### Styling - Lyra Theme
+
 This project uses the **Lyra** style from shadcn/ui ("Boxy and sharp. Pairs well with mono fonts."):
+
 - Tailwind CSS v4 with CSS-based configuration
 - Sharp corners (`--radius: 0`) for boxy appearance
 - Monospace typography (JetBrains Mono) throughout

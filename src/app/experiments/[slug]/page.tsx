@@ -64,8 +64,8 @@ export default async function ExperimentPage(props: ExperimentPageProps) {
       </div>
 
       {/* Experiment Header */}
-      <header className="mb-8 pb-6 border-b border-border">
-        <h1 className="text-3xl font-bold mb-3">{experiment.title}</h1>
+      <header className="border-border mb-8 border-b pb-6">
+        <h1 className="mb-3 text-3xl font-bold">{experiment.title}</h1>
         <p className="text-muted-foreground mb-4">{experiment.description}</p>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -77,7 +77,7 @@ export default async function ExperimentPage(props: ExperimentPageProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-4 text-sm">
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
               {formatDate(experiment.createdAt)}
@@ -96,8 +96,8 @@ export default async function ExperimentPage(props: ExperimentPageProps) {
       <div className="min-h-[400px]">
         <Suspense
           fallback={
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-pulse text-muted-foreground">
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-muted-foreground animate-pulse">
                 Loading experiment...
               </div>
             </div>

@@ -103,7 +103,9 @@ ${experimentImports.join(",\n")}
 
   fs.writeFileSync(REGISTRY_OUTPUT, registryContent);
 
-  console.log(`\n✅ Registry generated with ${experiments.length} experiment(s)`);
+  console.log(
+    `\n✅ Registry generated with ${experiments.length} experiment(s)`
+  );
   console.log(`   Output: ${REGISTRY_OUTPUT}`);
 }
 

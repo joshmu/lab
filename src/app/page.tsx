@@ -20,11 +20,11 @@ export default function HomePage() {
     <main>
       {/* Header */}
       <header className="mb-12">
-        <div className="flex items-center gap-3 mb-4">
-          <Beaker className="h-8 w-8 text-primary" />
+        <div className="mb-4 flex items-center gap-3">
+          <Beaker className="text-primary h-8 w-8" />
           <h1 className="text-4xl font-bold tracking-tight">Lab</h1>
         </div>
-        <p className="text-lg text-muted-foreground max-w-2xl">
+        <p className="text-muted-foreground max-w-2xl text-lg">
           A collection of web development experiments and explorations. Each
           experiment is a standalone page exploring different techniques,
           patterns, and ideas.
@@ -33,13 +33,13 @@ export default function HomePage() {
 
       {/* Experiments Grid */}
       {publishedExperiments.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg mb-4">
+        <div className="py-16 text-center">
+          <p className="text-muted-foreground mb-4 text-lg">
             No experiments yet.
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Add your first experiment in{" "}
-            <code className="bg-muted px-2 py-1 rounded">src/experiments/</code>
+            <code className="bg-muted rounded px-2 py-1">src/experiments/</code>
           </p>
         </div>
       ) : (
@@ -50,25 +50,25 @@ export default function HomePage() {
               href={`/experiments/${experiment.slug}`}
               className="group"
             >
-              <Card className="h-full transition-colors hover:border-primary/50">
+              <Card className="hover:border-primary/50 h-full transition-colors">
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                    <CardTitle className="group-hover:text-primary text-xl transition-colors">
                       {experiment.title}
                     </CardTitle>
-                    <ExternalLink className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ExternalLink className="text-muted-foreground h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
                   <CardDescription>{experiment.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="mb-3 flex flex-wrap gap-2">
                     {experiment.tags.map((tag) => (
                       <Badge key={tag} variant="secondary">
                         {tag}
                       </Badge>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {formatDate(experiment.createdAt)}
                   </p>
                 </CardContent>
@@ -79,8 +79,8 @@ export default function HomePage() {
       )}
 
       {/* Stats */}
-      <footer className="mt-16 pt-8 border-t border-border">
-        <p className="text-sm text-muted-foreground">
+      <footer className="border-border mt-16 border-t pt-8">
+        <p className="text-muted-foreground text-sm">
           {publishedExperiments.length} experiment
           {publishedExperiments.length !== 1 ? "s" : ""} in the registry
         </p>

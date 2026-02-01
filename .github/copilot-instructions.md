@@ -29,11 +29,13 @@ packages/
 ## Development Guidelines
 
 ### Package Management
+
 - Use **pnpm v9.0.0** exclusively (specified in package.json)
 - Internal packages use `workspace:*` protocol
 - All packages extend shared TypeScript/ESLint configs
 
 ### Essential Commands
+
 ```bash
 pnpm install         # Install dependencies
 pnpm dev            # Start all apps (web:3000, docs:3001)
@@ -45,31 +47,37 @@ pnpm generate:component # Generate new React components (from packages/ui)
 ```
 
 ### Development Workflow
+
 - Both Next.js apps use Turbopack: `next dev --turbopack`
-- UI package exports components through `src/index.tsx` 
+- UI package exports components through `src/index.tsx`
 - Component generation uses Turborepo's gen feature
 - All packages must pass type checking before builds
 
 ## Code Style & Patterns
 
 ### TypeScript
+
 - Multiple config presets: base, nextjs, react-library
 - Strict type checking enabled
 - Use proper typing, avoid `any` where possible
 
 ### React Components
+
 - Import shared components from `@repo/ui`
 - Follow existing component patterns in packages/ui
 - Use TypeScript interfaces for component props
 
 ### File Organization
+
 - Experiments go in `apps/web/experiments/[category]/[experiment-name]/`
 - Each experiment requires a `metadata.json` file with structured information
 - Shared components in `packages/ui/src/`
 - Follow existing directory structure patterns
 
 ### Experiment Structure
+
 Each experiment should include:
+
 - `metadata.json` - Required structured metadata including:
   - Basic info: id, title, description, slug, category
   - Technical: techStack, difficulty, status, version
@@ -81,6 +89,7 @@ Each experiment should include:
 ## Experimental Nature
 
 This is an experimental lab where:
+
 - Breaking changes are expected and welcomed
 - New technologies are actively tested
 - Iteration speed is prioritized over stability
@@ -89,17 +98,20 @@ This is an experimental lab where:
 ## Build System
 
 ### Turborepo Configuration
+
 - Tasks have dependency chains (build depends on ^build)
 - Caching enabled for build optimization
 - Special handling for experiments via `build:experiments` task
 - Experiment processing system in `lib/experiment-processing/`
 
 ### Experiment Processing
+
 - Automated metadata validation and processing
 - Navigation tree generation from experiment structure
 - Build-time experiment discovery and organization
 
 ### Environment
+
 - Node.js >=18 required
 - Development with hot reloading enabled
 - Build artifacts in `.next/` directories
@@ -107,14 +119,14 @@ This is an experimental lab where:
 ## When Working with This Repository
 
 1. **Respect the experimental nature** - suggest modern, cutting-edge solutions
-2. **Use the monorepo structure** - leverage shared packages appropriately  
+2. **Use the monorepo structure** - leverage shared packages appropriately
 3. **Follow TypeScript best practices** - maintain type safety
 4. **Consider performance** - this is a testing ground for optimization techniques
 5. **Suggest improvements** - this is a learning environment
 
 ## Special Considerations
 
-- Some lint warnings are acceptable in experimental code  
+- Some lint warnings are acceptable in experimental code
 - Turbopack is enabled by default for faster development
 - Component generation should use existing Turborepo generators
 - New experiments should follow the established patterns in `apps/web/experiments/`
