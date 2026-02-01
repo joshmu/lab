@@ -43,13 +43,13 @@ export function generateCircularMaze(
   const totalRadius = centerRadius + rings * ringWidth;
 
   // Calculate segments per ring (more segments in outer rings)
-  const baseSegments = 6;
+  const baseSegments = 8;
   const segmentsPerRing: number[] = [];
   for (let r = 0; r < rings; r++) {
     // Inner rings have fewer segments, outer rings have more
     const ringRadius = centerRadius + (r + 0.5) * ringWidth;
     const circumference = 2 * Math.PI * ringRadius;
-    const minSegmentArc = 40; // Minimum arc length per segment
+    const minSegmentArc = 25; // Minimum arc length per segment (smaller = more segments)
     const segments = Math.max(baseSegments, Math.floor(circumference / minSegmentArc));
     // Round to nice numbers that divide evenly
     segmentsPerRing.push(Math.round(segments / 2) * 2);

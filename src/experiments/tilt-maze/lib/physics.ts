@@ -19,9 +19,9 @@ export interface PhysicsConfig {
 
 export const defaultPhysicsConfig: PhysicsConfig = {
   friction: 0.98,
-  maxSpeed: 6, // Reduced from 10 to prevent tunneling through walls
-  acceleration: 0.4, // Slightly reduced for better control
-  bounceElasticity: 0.3,
+  maxSpeed: 4, // Reduced to prevent tunneling through walls
+  acceleration: 0.35, // Reduced for better control
+  bounceElasticity: 0.25,
 };
 
 /** Minimum velocity threshold below which ball stops */

@@ -54,6 +54,7 @@ export default function TiltMazeExperiment() {
   const [gameState, setGameState] = useState<GameState>(createInitialState);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [useAccelerometer, setUseAccelerometer] = useState(false);
+  const [calibrationMessage, setCalibrationMessage] = useState<string | null>(null);
 
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
@@ -61,6 +62,16 @@ export default function TiltMazeExperiment() {
   const { orientation, requestPermission, calibrate, getTilt: getAccelTilt } =
     useDeviceOrientation();
   const { getTilt: getKeyboardTilt } = useKeyboard();
+
+  // Handle calibration with visual feedback
+  const handleCalibrate = useCallback(() => {
+    calibrate();
+    setCalibrationMessage("Calibrated!");
+    setTimeout(() => setCalibrationMessage(null), 1500);
+    if (hapticsEnabled && isVibrationSupported()) {
+      navigator.vibrate([50, 50, 50]);
+    }
+  }, [calibrate, hapticsEnabled]);
 
   // Get current level config
   const levelConfig = getLevelConfig(gameState.level);
@@ -96,7 +107,7 @@ export default function TiltMazeExperiment() {
       // Check collisions with substeps to prevent tunneling through walls
       // First check with substeps for any collision along the path
       let lastContactNormal: { x: number; y: number } | null = null;
-      const maxIterations = 3;
+      const maxIterations = 5;
       let hasCollided = false;
 
       for (let i = 0; i < maxIterations; i++) {
@@ -108,7 +119,7 @@ export default function TiltMazeExperiment() {
               state.maze,
               state.centerX,
               state.centerY,
-              4 // substeps
+              8 // substeps for better tunneling prevention
             )
           : checkCircularWallCollision(
               ball,
@@ -204,11 +215,11 @@ export default function TiltMazeExperiment() {
       const granted = await requestPermission();
       if (granted) {
         setUseAccelerometer(true);
-        calibrate();
+        handleCalibrate();
       }
     } else if (orientation.permissionState === "granted") {
       setUseAccelerometer(true);
-      calibrate();
+      handleCalibrate();
     }
     setGameState((prev) => startLevel(prev, prev.level));
   };
@@ -219,12 +230,12 @@ export default function TiltMazeExperiment() {
       const granted = await requestPermission();
       if (granted) {
         setUseAccelerometer(true);
-        calibrate();
+        handleCalibrate();
       }
     } else {
       setUseAccelerometer(!useAccelerometer);
       if (!useAccelerometer) {
-        calibrate();
+        handleCalibrate();
       }
     }
   };
@@ -306,6 +317,13 @@ export default function TiltMazeExperiment() {
             </div>
           )}
 
+          {/* Calibration Message */}
+          {calibrationMessage && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md font-medium text-sm animate-pulse">
+              {calibrationMessage}
+            </div>
+          )}
+
           {/* Controls */}
           <div className="flex w-full items-center justify-between">
             <div className="flex gap-2">
@@ -332,7 +350,7 @@ export default function TiltMazeExperiment() {
 
             <div className="flex gap-2">
               {useAccelerometer && (
-                <Button variant="outline" size="sm" onClick={calibrate}>
+                <Button variant="outline" size="sm" onClick={handleCalibrate}>
                   Calibrate
                 </Button>
               )}

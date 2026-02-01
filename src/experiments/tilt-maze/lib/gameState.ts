@@ -32,14 +32,14 @@ export interface LevelConfig {
  * Difficulty increases with level
  */
 export function getLevelConfig(level: number): LevelConfig {
-  // Start with 3 rings, increase by 1 each level, cap at 6
-  const rings = Math.min(3 + Math.floor((level - 1) / 2), 6);
+  // Start with 5 rings, increase by 1 each level, cap at 8
+  const rings = Math.min(5 + Math.floor((level - 1) / 2), 8);
 
   // Canvas size based on rings
-  const canvasSize = 300 + rings * 20;
+  const canvasSize = 340 + rings * 25;
 
-  // Ball radius
-  const ballRadius = Math.max(5, 8 - level * 0.3);
+  // Ball radius - smaller for more precision
+  const ballRadius = Math.max(4, 6 - level * 0.2);
 
   return {
     rings,
