@@ -55,12 +55,15 @@ interface ExperimentMeta {
 ### Component Library
 Uses shadcn/ui components in `src/components/ui/`:
 - Button, Card, Badge (pre-installed)
-- Add more as needed from shadcn/ui docs
+- Add more via `npx shadcn@latest add [component]`
 
-### Styling
+### Styling - Lyra Theme
+This project uses the **Lyra** style from shadcn/ui ("Boxy and sharp. Pairs well with mono fonts."):
 - Tailwind CSS v4 with CSS-based configuration
-- Custom theme colors defined in `src/app/globals.css`
-- Dark mode support via `prefers-color-scheme`
+- Sharp corners (`--radius: 0`) for boxy appearance
+- Monospace typography (JetBrains Mono) throughout
+- Neutral color scheme with dark mode support (`.dark` class)
+- Theme variables defined in `src/app/globals.css`
 
 ## Important Notes
 

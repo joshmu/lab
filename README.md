@@ -1,6 +1,6 @@
 # Lab
 
-A personal experiments registry for web development explorations. Built with Next.js 15 and designed for rapid prototyping and experimentation.
+A personal experiments registry for web development explorations. Built with Next.js 15 and the shadcn/ui Lyra theme for a sharp, modern aesthetic.
 
 ## Quick Start
 
@@ -77,13 +77,23 @@ pnpm generate:registry
 ## Stack
 
 - **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
+- **Language**: TypeScript 5.x
+- **Styling**: Tailwind CSS v4 with shadcn/ui Lyra theme
 - **Components**: shadcn/ui (Radix primitives)
 - **Icons**: Lucide React
 - **Testing**: Vitest + Testing Library
 - **Linting**: ESLint 9 (flat config)
 - **Formatting**: Prettier
+
+## Theme: Lyra
+
+This project uses the **Lyra** style from shadcn/ui:
+
+- **Boxy and sharp** - Zero border-radius for clean, geometric aesthetics
+- **Monospace typography** - JetBrains Mono font throughout
+- **Neutral colors** - Clean grayscale palette with dark mode support
+
+Theme configuration is in `src/app/globals.css` with CSS variables.
 
 ## Project Structure
 
@@ -92,6 +102,7 @@ src/
 ├── app/                    # Next.js App Router
 │   ├── page.tsx           # Registry homepage
 │   ├── layout.tsx         # Root layout
+│   ├── globals.css        # Lyra theme + Tailwind
 │   └── experiments/
 │       └── [slug]/        # Dynamic experiment routes
 ├── components/
