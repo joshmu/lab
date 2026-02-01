@@ -1,186 +1,141 @@
-'use client';
-
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Github, Globe } from "lucide-react";
-import { NavigationTree } from "./components/navigation/NavigationTree";
-import { SearchBar } from "./components/navigation/SearchBar";
-import { FilterPanel } from "./components/navigation/FilterPanel";
-import type { NavigationNode, FilterOptions } from "../lib/experiment-processing/types";
-import { cn } from "@/lib/utils";
-
-// Route mapping for experiments to landing pages
-const experimentRouteMap: Record<string, string> = {
-  'particle-system': '/landing-1',
-  'liquid-morphing': '/landing-2',
-  'cyber-grid': '/landing-3',
-  'glitch-art': '/landing-4',
-  'organic-evolution': '/landing-5',
-  'digital-rain': '/landing-6'
-};
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Github, Beaker, ArrowRight } from 'lucide-react';
 
 export default function Home() {
-  const [navigationData, setNavigationData] = useState<{ nodes: NavigationNode[]; searchIndex: any } | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<FilterOptions>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch('/api/experiments')
-      .then(res => res.json())
-      .then(data => {
-        setNavigationData({
-          nodes: data.navigationTree?.nodes || [],
-          searchIndex: data.searchIndex || null
-        });
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load experiments:', err);
-        setLoading(false);
-      });
-  }, []);
-
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="min-h-screen flex flex-col">
-        {/* Hero Section */}
-        <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-20 max-w-7xl">
-          <div className="space-y-6 mb-12 md:mb-16">
+        <main className="flex-1 container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-5xl">
+          {/* Hero Section */}
+          <div className="space-y-8 mb-16 md:mb-24">
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight">
-                Josh Mu's Lab
-                <span className="inline-block ml-2 animate-pulse">🧪</span>
-              </h1>
-              <div className="h-1 bg-primary max-w-fit w-24 sm:w-32"></div>
+              <div className="inline-flex items-center gap-3 mb-2">
+                <Beaker className="size-12 md:size-16" />
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight">
+                  Lab
+                </h1>
+              </div>
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl">
+                A minimal experimentation space for exploring modern web development concepts, algorithms, and interactive ideas.
+              </p>
             </div>
-            
-            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mt-6">
-              A place for experiments
-            </p>
-            
-            <div className="flex flex-wrap items-center gap-2 text-sm mt-6">
-              <Badge variant="secondary">
-                v0.1.0
-              </Badge>
-              <Badge variant="outline">
-                Experimental
-              </Badge>
-              <Badge variant="default">
-                Live
-              </Badge>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary">Next.js 16</Badge>
+              <Badge variant="secondary">React 19</Badge>
+              <Badge variant="secondary">Tailwind v4</Badge>
+              <Badge variant="outline">Lyra Theme</Badge>
             </div>
           </div>
 
-          {/* Experiment Explorer Section */}
-          <section className="mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 md:mb-8">
-              Experiment Explorer
+          {/* Quick Start Section */}
+          <section className="mb-16 md:mb-24">
+            <h2 className="text-3xl font-bold mb-6">
+              Quick Start
             </h2>
-          
-          {
-            loading ? (
-              <Card className="h-64 flex items-center justify-center">
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Browse Experiments</CardTitle>
+                  <CardDescription>
+                    Explore interactive experiments, algorithms, and tools
+                  </CardDescription>
+                </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground animate-pulse">Loading experiments...</p>
+                  <Button asChild className="w-full">
+                    <Link href="/experiments">
+                      View All Experiments
+                      <ArrowRight className="ml-2 size-4" />
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
-            ) : navigationData ? (
-              <div className="flex flex-col gap-4 sm:gap-6 max-w-4xl mx-auto w-full">
-                <SearchBar
-                  onSearch={setSearchQuery}
-                  placeholder="Search experiments..."
-                  className="w-full"
-                />
-                
-                <FilterPanel
-                  options={filters}
-                  availableCategories={['animations', 'data-visualization', 'interactions', 'effects', 'prototypes', 'algorithms']}
-                  availableTags={[]}
-                  availableTechStack={[]}
-                  onChange={setFilters}
-                  onReset={() => setFilters({})}
-                />
-                
-                <Card className="overflow-hidden">
-                  <CardContent className="p-4 sm:p-6 min-h-[300px] sm:min-h-[400px] md:min-h-[500px] lg:min-h-[600px] overflow-auto">
-                    <NavigationTree
-                      nodes={navigationData.nodes}
-                      searchQuery={searchQuery}
-                      experimentRouteMap={experimentRouteMap}
-                      className="h-full"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Failed to load experiments</p>
-              </div>
-            )
-          }
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>View Source</CardTitle>
+                  <CardDescription>
+                    Check out the code on GitHub
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild variant="outline" className="w-full">
+                    <a href="https://github.com/joshmu/lab" target="_blank" rel="noopener noreferrer">
+                      <Github className="mr-2 size-4" />
+                      GitHub Repository
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="flex flex-wrap gap-4 justify-center items-center">
-            <Button asChild size="lg">
-              <a href="https://github.com/joshmu" target="_blank" rel="noopener noreferrer">
-                <Github className="mr-2 h-5 w-5" />
-                GitHub
-              </a>
-            </Button>
-            
-            <Button asChild variant="outline" size="lg">
-              <a href="https://joshmu.dev" target="_blank" rel="noopener noreferrer">
-                <Globe className="mr-2 h-5 w-5" />
-                joshmu.dev
-              </a>
-            </Button>
+          {/* Philosophy Section */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold mb-6">
+              Philosophy
+            </h2>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="prose prose-neutral dark:prose-invert max-w-none">
+                  <p className="text-muted-foreground">
+                    This lab is focused on <strong>outcome-based experiments</strong> - interactive tools, algorithms, and concepts that teach or demonstrate something valuable, rather than purely visual effects.
+                  </p>
+                  <p className="text-muted-foreground mt-4">
+                    Each experiment is built with modern web technologies and designed to be:
+                  </p>
+                  <ul className="text-muted-foreground mt-2 space-y-1">
+                    <li><strong>Interactive</strong> - User input drives the experience</li>
+                    <li><strong>Educational</strong> - Demonstrates concepts or techniques</li>
+                    <li><strong>Minimal</strong> - Focused on the core idea</li>
+                    <li><strong>Modern</strong> - Uses 2026 web standards</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </section>
         </main>
 
         {/* Footer */}
-        <footer className="border-t py-8 sm:py-12 mt-12">
-          <div className="container mx-auto px-4 sm:px-6 max-w-7xl flex justify-center items-center gap-4 sm:gap-6 text-sm">
-            <a
-              href="https://github.com/joshmu/lab"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Image
-                aria-hidden
-                src="/window.svg"
-                alt="Code icon"
-                width={16}
-                height={16}
-                className="dark:invert"
-              />
-              View Source
-            </a>
-            <span className="text-muted-foreground">•</span>
-            <a
-              href="https://joshmu.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Image
-                aria-hidden
-                src="/globe.svg"
-                alt="Globe icon"
-                width={16}
-                height={16}
-                className="dark:invert"
-              />
-              joshmu.dev
-            </a>
+        <footer className="border-t py-8 mt-auto">
+          <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span>Built by</span>
+                <a
+                  href="https://joshmu.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:text-foreground transition-colors"
+                >
+                  Josh Mu
+                </a>
+              </div>
+              <div className="flex items-center gap-4">
+                <a
+                  href="https://github.com/joshmu/lab"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Source
+                </a>
+                <span>•</span>
+                <a
+                  href="https://github.com/joshmu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  GitHub
+                </a>
+              </div>
+            </div>
           </div>
         </footer>
       </div>
