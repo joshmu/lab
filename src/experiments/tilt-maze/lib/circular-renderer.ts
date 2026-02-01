@@ -85,6 +85,7 @@ export function renderCircularMaze(
   ctx.strokeStyle = wallColor;
   ctx.lineWidth = wallWidth;
   ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 
   // Draw outer boundary
   ctx.beginPath();
@@ -102,33 +103,80 @@ export function renderCircularMaze(
     }
   }
 
-  // Draw ring walls and segment walls
-  for (let ring = 0; ring < maze.rings; ring++) {
-    const { innerRadius, outerRadius } = getRingRadii(maze, ring);
+  // Draw arc walls between rings (inner walls for each ring)
+  for (let ring = 1; ring < maze.rings; ring++) {
+    const { innerRadius } = getRingRadii(maze, ring);
     const segCount = maze.segmentsPerRing[ring];
 
-    for (let seg = 0; seg < segCount; seg++) {
-      const cell = maze.cells[ring][seg];
-      const { startAngle, endAngle } = getSegmentAngles(maze, ring, seg);
+    // Group consecutive segments with inner walls into arcs
+    let arcStart = -1;
+    for (let seg = 0; seg <= segCount; seg++) {
+      const actualSeg = seg % segCount;
+      const hasWall = seg < segCount && maze.cells[ring][actualSeg].innerWall;
 
-      // Inner arc wall (between this ring and inner ring)
-      if (cell.innerWall && ring > 0) {
+      if (hasWall && arcStart === -1) {
+        arcStart = seg;
+      } else if (!hasWall && arcStart !== -1) {
+        // Draw arc from arcStart to seg-1
+        const { startAngle } = getSegmentAngles(maze, ring, arcStart % segCount);
+        const { endAngle } = getSegmentAngles(maze, ring, (seg - 1) % segCount);
         ctx.beginPath();
         ctx.arc(centerX, centerY, innerRadius, startAngle, endAngle);
         ctx.stroke();
+        arcStart = -1;
       }
+    }
+  }
 
-      // Clockwise radial wall
-      if (cell.cwWall) {
-        const x1 = centerX + Math.cos(endAngle) * innerRadius;
-        const y1 = centerY + Math.sin(endAngle) * innerRadius;
-        const x2 = centerX + Math.cos(endAngle) * outerRadius;
-        const y2 = centerY + Math.sin(endAngle) * outerRadius;
+  // Draw radial walls (spokes) - draw from center outward connecting walls
+  const segCount = maze.segmentsPerRing[0]; // All rings have same segment count
+  for (let seg = 0; seg < segCount; seg++) {
+    const { endAngle } = getSegmentAngles(maze, 0, seg);
+
+    // For each radial line, find continuous wall segments
+    // A radial wall exists at a ring if that cell has cwWall = true
+    let wallStart = -1;
+
+    for (let ring = 0; ring <= maze.rings; ring++) {
+      const hasWall = ring < maze.rings && maze.cells[ring][seg].cwWall;
+
+      if (hasWall && wallStart === -1) {
+        wallStart = ring;
+      } else if (!hasWall && wallStart !== -1) {
+        // Draw radial line from wallStart to ring-1
+        const startRadius =
+          wallStart === 0 ? maze.centerRadius : getRingRadii(maze, wallStart).innerRadius;
+        const endRadius = getRingRadii(maze, ring - 1).outerRadius;
+
+        const x1 = centerX + Math.cos(endAngle) * startRadius;
+        const y1 = centerY + Math.sin(endAngle) * startRadius;
+        const x2 = centerX + Math.cos(endAngle) * endRadius;
+        const y2 = centerY + Math.sin(endAngle) * endRadius;
+
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
+
+        wallStart = -1;
       }
+    }
+
+    // Handle case where wall extends to outer boundary
+    if (wallStart !== -1) {
+      const startRadius =
+        wallStart === 0 ? maze.centerRadius : getRingRadii(maze, wallStart).innerRadius;
+      const endRadius = maze.totalRadius;
+
+      const x1 = centerX + Math.cos(endAngle) * startRadius;
+      const y1 = centerY + Math.sin(endAngle) * startRadius;
+      const x2 = centerX + Math.cos(endAngle) * endRadius;
+      const y2 = centerY + Math.sin(endAngle) * endRadius;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
     }
   }
 }

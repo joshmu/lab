@@ -46,7 +46,7 @@ export function generateCircularMaze(
   // Calculate segments per ring
   // Use consistent segment count so radial walls connect properly
   // More segments for more rings to create proper maze paths
-  const baseSegments = Math.max(8, rings + 4);
+  const baseSegments = Math.max(12, rings + 6);
   const segmentsPerRing: number[] = [];
   for (let r = 0; r < rings; r++) {
     // All rings have same segment count for proper wall alignment
