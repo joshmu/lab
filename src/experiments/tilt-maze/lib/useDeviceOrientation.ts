@@ -128,7 +128,7 @@ export function useDeviceOrientation(): UseDeviceOrientationResult {
     // Normalize to -1 to 1 range
     // Beta: -180 to 180, but we care about -45 to 45 for gameplay
     // Gamma: -90 to 90, but we care about -45 to 45 for gameplay
-    const maxTilt = 30; // degrees
+    const maxTilt = 45; // degrees - higher value = less sensitive
 
     const x = Math.max(-1, Math.min(1, adjustedGamma / maxTilt));
     const y = Math.max(-1, Math.min(1, adjustedBeta / maxTilt));

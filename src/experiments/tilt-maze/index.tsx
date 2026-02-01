@@ -30,15 +30,15 @@ import {
   defaultPhysicsConfig,
 } from "./lib/physics";
 import {
-  checkWallCollision,
-  resolveCollision,
-  isAtGoal,
-} from "./lib/collision";
+  checkCircularWallCollision,
+  resolveCircularCollision,
+  isAtCircularGoal,
+} from "./lib/circular-collision";
 import {
-  renderMaze,
-  renderBall,
-  defaultRenderConfig,
-} from "./lib/renderer";
+  renderCircularMaze,
+  renderCircularBall,
+  defaultCircularRenderConfig,
+} from "./lib/circular-renderer";
 import { useGameLoop } from "./lib/useGameLoop";
 import { useDeviceOrientation } from "./lib/useDeviceOrientation";
 import { useKeyboard } from "./lib/useKeyboard";
@@ -50,7 +50,6 @@ import {
 
 export default function TiltMazeExperiment() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mazeCanvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<GameState>(createInitialState);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [useAccelerometer, setUseAccelerometer] = useState(false);
@@ -64,42 +63,28 @@ export default function TiltMazeExperiment() {
 
   // Get current level config
   const levelConfig = getLevelConfig(gameState.level);
+  const canvasSize = levelConfig.canvasSize;
 
-  // Render maze when it changes
-  useEffect(() => {
-    const mazeCanvas = mazeCanvasRef.current;
-    if (!mazeCanvas) return;
-
-    const ctx = mazeCanvas.getContext("2d");
-    if (!ctx) return;
-
-    const config = {
-      ...defaultRenderConfig,
-      cellSize: levelConfig.cellSize,
-    };
-
-    mazeCanvas.width = gameState.maze.width * levelConfig.cellSize;
-    mazeCanvas.height = gameState.maze.height * levelConfig.cellSize;
-
-    renderMaze(ctx, gameState.maze, config);
-  }, [gameState.maze, levelConfig.cellSize]);
-
-  // Set up ball canvas
+  // Set up canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.width = gameState.maze.width * levelConfig.cellSize;
-    canvas.height = gameState.maze.height * levelConfig.cellSize;
-  }, [gameState.maze.width, gameState.maze.height, levelConfig.cellSize]);
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+  }, [canvasSize]);
 
   // Game update function
   const handleUpdate = useCallback(
     (deltaTime: number) => {
       if (gameStateRef.current.status !== "playing") return;
 
+      const state = gameStateRef.current;
       const tilt = useAccelerometer ? getAccelTilt() : getKeyboardTilt();
-      let ball = gameStateRef.current.ball;
+
+      // Store previous ball position for tunneling detection
+      const prevBall = { ...state.ball };
+      let ball = state.ball;
 
       // Apply tilt force
       ball = applyForce(ball, tilt.x, tilt.y, defaultPhysicsConfig);
@@ -107,36 +92,42 @@ export default function TiltMazeExperiment() {
       // Update physics
       ball = updateBall(ball, deltaTime, defaultPhysicsConfig);
 
-      // Check collisions
-      const collision = checkWallCollision(
-        ball,
-        gameStateRef.current.maze,
-        levelConfig.cellSize
-      );
-
-      if (collision.collided) {
-        ball = resolveCollision(
+      // Check collisions with multiple iterations to prevent tunneling
+      const maxIterations = 3;
+      for (let i = 0; i < maxIterations; i++) {
+        const collision = checkCircularWallCollision(
           ball,
-          collision,
-          defaultPhysicsConfig.bounceElasticity
+          state.maze,
+          state.centerX,
+          state.centerY
         );
-        if (hapticsEnabled) {
-          vibrateOnCollision();
+
+        if (collision.collided) {
+          ball = resolveCircularCollision(
+            ball,
+            collision,
+            defaultPhysicsConfig.bounceElasticity
+          );
+          if (hapticsEnabled && i === 0) {
+            vibrateOnCollision();
+          }
+        } else {
+          break;
         }
       }
 
       // Check win condition
-      if (isAtGoal(ball, gameStateRef.current.maze, levelConfig.cellSize)) {
+      if (isAtCircularGoal(ball, state.maze, state.centerX, state.centerY)) {
         if (hapticsEnabled) {
           vibrateOnWin();
         }
-        setGameState((prev) => completeLevel({ ...prev, ball }));
+        setGameState((prev) => completeLevel({ ...prev, ball, prevBall }));
         return;
       }
 
-      setGameState((prev) => ({ ...prev, ball }));
+      setGameState((prev) => ({ ...prev, ball, prevBall }));
     },
-    [useAccelerometer, getAccelTilt, getKeyboardTilt, levelConfig.cellSize, hapticsEnabled]
+    [useAccelerometer, getAccelTilt, getKeyboardTilt, hapticsEnabled]
   );
 
   // Game render function
@@ -147,17 +138,20 @@ export default function TiltMazeExperiment() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const config = {
-      ...defaultRenderConfig,
-      cellSize: levelConfig.cellSize,
-    };
+    const state = gameStateRef.current;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Render maze
+    renderCircularMaze(
+      ctx,
+      state.maze,
+      state.centerX,
+      state.centerY,
+      defaultCircularRenderConfig
+    );
 
-    // Draw ball
-    renderBall(ctx, gameStateRef.current.ball, config);
-  }, [levelConfig.cellSize]);
+    // Render ball
+    renderCircularBall(ctx, state.ball, defaultCircularRenderConfig);
+  }, []);
 
   // Start game loop
   useGameLoop({
@@ -206,42 +200,34 @@ export default function TiltMazeExperiment() {
       ? Date.now() - gameState.startTime
       : gameState.elapsedTime;
 
-  const canvasWidth = gameState.maze.width * levelConfig.cellSize;
-  const canvasHeight = gameState.maze.height * levelConfig.cellSize;
-
   return (
     <div className="flex flex-col items-center gap-6">
       <Card className="w-full max-w-md">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Tilt Maze</CardTitle>
+            <CardTitle className="text-lg">Circular Maze</CardTitle>
             <Badge variant="outline">Level {gameState.level}</Badge>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
           {/* Game Canvas */}
           <div
-            className="relative border-2 border-neutral-200 dark:border-neutral-800"
-            style={{ width: canvasWidth, height: canvasHeight }}
+            className="relative border-2 border-neutral-200 dark:border-neutral-800 rounded-full overflow-hidden"
+            style={{ width: canvasSize, height: canvasSize }}
           >
-            <canvas
-              ref={mazeCanvasRef}
-              className="absolute inset-0"
-              style={{ width: canvasWidth, height: canvasHeight }}
-            />
             <canvas
               ref={canvasRef}
               className="absolute inset-0"
-              style={{ width: canvasWidth, height: canvasHeight }}
+              style={{ width: canvasSize, height: canvasSize }}
             />
 
             {/* Start overlay */}
             {gameState.status === "start" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-neutral-950/90">
-                <h2 className="mb-4 text-xl font-bold">Tilt Maze</h2>
-                <p className="text-muted-foreground mb-4 text-center text-sm">
-                  Navigate the ball to the{" "}
-                  <span className="text-red-500">red goal</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-neutral-950/90 rounded-full">
+                <h2 className="mb-4 text-xl font-bold">Circular Maze</h2>
+                <p className="text-muted-foreground mb-4 text-center text-sm px-8">
+                  Navigate from the outer ring to the{" "}
+                  <span className="text-blue-500">blue center</span>
                 </p>
                 <Button onClick={handleStart} size="lg">
                   <Play className="mr-2 h-4 w-4" /> Start
@@ -251,7 +237,7 @@ export default function TiltMazeExperiment() {
 
             {/* Win overlay */}
             {gameState.status === "won" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-neutral-950/90">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-neutral-950/90 rounded-full">
                 <h2 className="mb-2 text-xl font-bold text-green-600">
                   Level Complete!
                 </h2>
@@ -355,7 +341,7 @@ export default function TiltMazeExperiment() {
         ) : (
           <>
             Use <strong>Arrow keys</strong> or <strong>WASD</strong> to move the
-            ball through the maze.
+            ball through the maze to the center.
           </>
         )}
       </div>

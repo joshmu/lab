@@ -1,8 +1,9 @@
 /**
  * Game state management for the tilt maze game
+ * Now uses circular mazes with rings
  */
 
-import { generateMaze, type Maze } from "./maze";
+import { generateCircularMaze, type CircularMaze } from "./circular-maze";
 import { createBall, type Ball } from "./physics";
 
 export type GameStatus = "start" | "playing" | "won" | "paused";
@@ -10,17 +11,19 @@ export type GameStatus = "start" | "playing" | "won" | "paused";
 export interface GameState {
   status: GameStatus;
   level: number;
-  maze: Maze;
+  maze: CircularMaze;
   ball: Ball;
+  prevBall: Ball; // Previous ball position for tunneling detection
   startTime: number;
   elapsedTime: number;
   bestTimes: Record<number, number>;
+  centerX: number;
+  centerY: number;
 }
 
 export interface LevelConfig {
-  width: number;
-  height: number;
-  cellSize: number;
+  rings: number;
+  canvasSize: number;
   ballRadius: number;
 }
 
@@ -29,19 +32,18 @@ export interface LevelConfig {
  * Difficulty increases with level
  */
 export function getLevelConfig(level: number): LevelConfig {
-  // Start at 5x5, increase by 2 each level, cap at 15x15
-  const size = Math.min(5 + (level - 1) * 2, 15);
+  // Start with 3 rings, increase by 1 each level, cap at 6
+  const rings = Math.min(3 + Math.floor((level - 1) / 2), 6);
 
-  // Cell size decreases as maze gets larger to fit screen
-  const cellSize = Math.max(30, 50 - (level - 1) * 3);
+  // Canvas size based on rings
+  const canvasSize = 300 + rings * 20;
 
-  // Ball radius scales with cell size
-  const ballRadius = Math.max(4, cellSize * 0.15);
+  // Ball radius
+  const ballRadius = Math.max(5, 8 - level * 0.3);
 
   return {
-    width: size,
-    height: size,
-    cellSize,
+    rings,
+    canvasSize,
     ballRadius,
   };
 }
@@ -52,21 +54,30 @@ export function getLevelConfig(level: number): LevelConfig {
 export function createInitialState(): GameState {
   const level = 1;
   const config = getLevelConfig(level);
-  const maze = generateMaze(config.width, config.height);
-  const ball = createBall(
-    (maze.start.x + 0.5) * config.cellSize,
-    (maze.start.y + 0.5) * config.cellSize,
-    config.ballRadius
-  );
+  const maze = generateCircularMaze(config.rings);
+
+  const centerX = config.canvasSize / 2;
+  const centerY = config.canvasSize / 2;
+
+  // Start ball on outer ring
+  const startAngle = -Math.PI / 2; // Top
+  const startRadius = maze.totalRadius - maze.ringWidth / 2;
+  const ballX = centerX + Math.cos(startAngle) * startRadius;
+  const ballY = centerY + Math.sin(startAngle) * startRadius;
+
+  const ball = createBall(ballX, ballY, config.ballRadius);
 
   return {
     status: "start",
     level,
     maze,
     ball,
+    prevBall: ball,
     startTime: 0,
     elapsedTime: 0,
     bestTimes: loadBestTimes(),
+    centerX,
+    centerY,
   };
 }
 
@@ -75,12 +86,23 @@ export function createInitialState(): GameState {
  */
 export function startLevel(state: GameState, level: number): GameState {
   const config = getLevelConfig(level);
-  const maze = generateMaze(config.width, config.height);
-  const ball = createBall(
-    (maze.start.x + 0.5) * config.cellSize,
-    (maze.start.y + 0.5) * config.cellSize,
-    config.ballRadius
-  );
+  const maze = generateCircularMaze(config.rings);
+
+  const canvasSize = config.canvasSize;
+  const centerX = canvasSize / 2;
+  const centerY = canvasSize / 2;
+
+  // Start ball on outer ring (random position)
+  const segCount = maze.segmentsPerRing[maze.rings - 1];
+  const startSeg = Math.floor(Math.random() * segCount);
+  const segmentAngle = (2 * Math.PI) / segCount;
+  const startAngle = startSeg * segmentAngle - Math.PI / 2 + segmentAngle / 2;
+  const startRadius = maze.totalRadius - maze.ringWidth / 2;
+
+  const ballX = centerX + Math.cos(startAngle) * startRadius;
+  const ballY = centerY + Math.sin(startAngle) * startRadius;
+
+  const ball = createBall(ballX, ballY, config.ballRadius);
 
   return {
     ...state,
@@ -88,8 +110,11 @@ export function startLevel(state: GameState, level: number): GameState {
     level,
     maze,
     ball,
+    prevBall: ball,
     startTime: Date.now(),
     elapsedTime: 0,
+    centerX,
+    centerY,
   };
 }
 
