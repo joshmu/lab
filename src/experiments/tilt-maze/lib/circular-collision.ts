@@ -202,6 +202,7 @@ export function checkCircularWallCollision(
 
   const { ring, segment } = cellInfo;
   const cell = maze.cells[ring][segment];
+  const segCount = maze.segmentsPerRing[ring];
   const { innerRadius, outerRadius } = getRingRadii(maze, ring);
   const { startAngle, endAngle } = getSegmentAngles(maze, ring, segment);
 
@@ -224,21 +225,33 @@ export function checkCircularWallCollision(
     }
   }
 
-  // Check outer arc wall (away from center) - only for non-outermost ring
-  // Only collide if ball is within the angular span of this segment's wall
-  if (ring < maze.rings - 1 && cell.outerWall && dist + ball.radius > outerRadius) {
-    if (isAngleInArc(ballAngle, startAngle, endAngle, angularTolerance)) {
-      return {
-        collided: true,
-        normal: { x: -radialX, y: -radialY }, // Push inward
-        penetration: dist + ball.radius - outerRadius + COLLISION_MARGIN,
-      };
+  // Check outer arc wall (away from center) - for non-outermost ring
+  // The outer boundary of ring R is the inner boundary of ring R+1
+  // So we check the innerWall of the cell in the next ring outward
+  if (ring < maze.rings - 1 && dist + ball.radius > outerRadius) {
+    // Find the corresponding segment in the outer ring
+    const outerSegCount = maze.segmentsPerRing[ring + 1];
+    const outerSegment = Math.floor((segment / segCount) * outerSegCount);
+    const outerCell = maze.cells[ring + 1][outerSegment];
+
+    if (outerCell.innerWall) {
+      const { startAngle: outerStart, endAngle: outerEnd } = getSegmentAngles(
+        maze,
+        ring + 1,
+        outerSegment
+      );
+      if (isAngleInArc(ballAngle, outerStart, outerEnd, angularTolerance)) {
+        return {
+          collided: true,
+          normal: { x: -radialX, y: -radialY }, // Push inward
+          penetration: dist + ball.radius - outerRadius + COLLISION_MARGIN,
+        };
+      }
     }
   }
 
   // Check adjacent segments for arc walls the ball might be touching
   // This handles cases where ball straddles segment boundaries
-  const segCount = maze.segmentsPerRing[ring];
   const adjacentSegments = [
     (segment + 1) % segCount, // clockwise neighbor
     (segment - 1 + segCount) % segCount, // counter-clockwise neighbor
@@ -264,14 +277,25 @@ export function checkCircularWallCollision(
       }
     }
 
-    // Check adjacent cell's outer wall
-    if (ring < maze.rings - 1 && adjCell.outerWall && dist + ball.radius > outerRadius) {
-      if (isAngleInArc(ballAngle, adjStart, adjEnd, angularTolerance)) {
-        return {
-          collided: true,
-          normal: { x: -radialX, y: -radialY },
-          penetration: dist + ball.radius - outerRadius + COLLISION_MARGIN,
-        };
+    // Check adjacent cell's outer wall (via the next ring's inner wall)
+    if (ring < maze.rings - 1 && dist + ball.radius > outerRadius) {
+      const outerSegCount = maze.segmentsPerRing[ring + 1];
+      const adjOuterSegment = Math.floor((adjSeg / segCount) * outerSegCount);
+      const adjOuterCell = maze.cells[ring + 1][adjOuterSegment];
+
+      if (adjOuterCell.innerWall) {
+        const { startAngle: adjOuterStart, endAngle: adjOuterEnd } = getSegmentAngles(
+          maze,
+          ring + 1,
+          adjOuterSegment
+        );
+        if (isAngleInArc(ballAngle, adjOuterStart, adjOuterEnd, angularTolerance)) {
+          return {
+            collided: true,
+            normal: { x: -radialX, y: -radialY },
+            penetration: dist + ball.radius - outerRadius + COLLISION_MARGIN,
+          };
+        }
       }
     }
   }
