@@ -24,6 +24,9 @@ export const defaultPhysicsConfig: PhysicsConfig = {
   bounceElasticity: 0.3,
 };
 
+/** Minimum velocity threshold below which ball stops */
+const MIN_VELOCITY_THRESHOLD = 0.01;
+
 /**
  * Create a new ball at the specified position
  */
@@ -84,8 +87,7 @@ export function updateBall(
   let vy = ball.vy * frictionFactor;
 
   // Stop very slow movement
-  const minVelocity = 0.01;
-  if (Math.abs(vx) < minVelocity && Math.abs(vy) < minVelocity) {
+  if (Math.abs(vx) < MIN_VELOCITY_THRESHOLD && Math.abs(vy) < MIN_VELOCITY_THRESHOLD) {
     vx = 0;
     vy = 0;
   }
@@ -97,11 +99,4 @@ export function updateBall(
     vx,
     vy,
   };
-}
-
-/**
- * Get the current speed of the ball
- */
-export function getBallSpeed(ball: Ball): number {
-  return Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
 }

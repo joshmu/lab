@@ -65,10 +65,11 @@ export function renderMaze(
   );
   ctx.globalAlpha = 1;
 
-  // Draw walls
+  // Draw walls - batched into single stroke for performance
   ctx.strokeStyle = wallColor;
   ctx.lineWidth = wallWidth;
   ctx.lineCap = "square";
+  ctx.beginPath();
 
   for (let y = 0; y < maze.height; y++) {
     for (let x = 0; x < maze.width; x++) {
@@ -76,35 +77,26 @@ export function renderMaze(
       const px = x * cellSize;
       const py = y * cellSize;
 
-      ctx.beginPath();
-
-      // North wall
       if (cell.north) {
         ctx.moveTo(px, py);
         ctx.lineTo(px + cellSize, py);
       }
-
-      // South wall
       if (cell.south) {
         ctx.moveTo(px, py + cellSize);
         ctx.lineTo(px + cellSize, py + cellSize);
       }
-
-      // West wall
       if (cell.west) {
         ctx.moveTo(px, py);
         ctx.lineTo(px, py + cellSize);
       }
-
-      // East wall
       if (cell.east) {
         ctx.moveTo(px + cellSize, py);
         ctx.lineTo(px + cellSize, py + cellSize);
       }
-
-      ctx.stroke();
     }
   }
+
+  ctx.stroke();
 }
 
 /**
@@ -144,24 +136,8 @@ export function renderBall(
 }
 
 /**
- * Clear only the ball area for efficient redraw
- */
-export function clearBallArea(
-  ctx: CanvasRenderingContext2D,
-  ball: Ball,
-  _config: RenderConfig
-): void {
-  const margin = 5;
-  ctx.clearRect(
-    ball.x - ball.radius - margin,
-    ball.y - ball.radius - margin,
-    ball.radius * 2 + margin * 2 + 4,
-    ball.radius * 2 + margin * 2 + 4
-  );
-}
-
-/**
- * Render win celebration effect
+ * Render win celebration effect (expanding circle from goal)
+ * @param progress - Animation progress from 0 to 1
  */
 export function renderWinEffect(
   ctx: CanvasRenderingContext2D,

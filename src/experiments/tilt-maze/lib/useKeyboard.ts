@@ -3,17 +3,34 @@
  * Provides normalized direction values for desktop fallback
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
-export interface KeyboardState {
+interface KeyboardState {
   up: boolean;
   down: boolean;
   left: boolean;
   right: boolean;
 }
 
+type Direction = keyof KeyboardState;
+
+/** Key to direction mapping */
+const KEY_MAP: Record<string, Direction> = {
+  ArrowUp: "up",
+  w: "up",
+  W: "up",
+  ArrowDown: "down",
+  s: "down",
+  S: "down",
+  ArrowLeft: "left",
+  a: "left",
+  A: "left",
+  ArrowRight: "right",
+  d: "right",
+  D: "right",
+};
+
 export interface UseKeyboardResult {
-  keys: KeyboardState;
   getTilt: () => { x: number; y: number };
 }
 
@@ -25,79 +42,31 @@ export function useKeyboard(): UseKeyboardResult {
     right: false,
   });
 
-  const [keys, setKeys] = useState<KeyboardState>(keysRef.current);
-
-  const updateKey = useCallback(
-    (key: keyof KeyboardState, pressed: boolean) => {
-      if (keysRef.current[key] !== pressed) {
-        keysRef.current = { ...keysRef.current, [key]: pressed };
-        setKeys(keysRef.current);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const direction = KEY_MAP[event.key];
+      if (direction) {
+        event.preventDefault();
+        keysRef.current[direction] = true;
       }
-    },
-    []
-  );
+    };
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      switch (event.key) {
-        case "ArrowUp":
-        case "w":
-        case "W":
-          event.preventDefault();
-          updateKey("up", true);
-          break;
-        case "ArrowDown":
-        case "s":
-        case "S":
-          event.preventDefault();
-          updateKey("down", true);
-          break;
-        case "ArrowLeft":
-        case "a":
-        case "A":
-          event.preventDefault();
-          updateKey("left", true);
-          break;
-        case "ArrowRight":
-        case "d":
-        case "D":
-          event.preventDefault();
-          updateKey("right", true);
-          break;
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const direction = KEY_MAP[event.key];
+      if (direction) {
+        keysRef.current[direction] = false;
       }
-    },
-    [updateKey]
-  );
+    };
 
-  const handleKeyUp = useCallback(
-    (event: KeyboardEvent) => {
-      switch (event.key) {
-        case "ArrowUp":
-        case "w":
-        case "W":
-          updateKey("up", false);
-          break;
-        case "ArrowDown":
-        case "s":
-        case "S":
-          updateKey("down", false);
-          break;
-        case "ArrowLeft":
-        case "a":
-        case "A":
-          updateKey("left", false);
-          break;
-        case "ArrowRight":
-        case "d":
-        case "D":
-          updateKey("right", false);
-          break;
-      }
-    },
-    [updateKey]
-  );
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
-  // Get normalized tilt values (-1 to 1) from keyboard state
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
   const getTilt = useCallback(() => {
     const { up, down, left, right } = keysRef.current;
 
@@ -119,15 +88,5 @@ export function useKeyboard(): UseKeyboardResult {
     return { x, y };
   }, []);
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [handleKeyDown, handleKeyUp]);
-
-  return { keys, getTilt };
+  return { getTilt };
 }

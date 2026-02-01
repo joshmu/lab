@@ -98,6 +98,32 @@ describe("Maze Generation", () => {
         expect(isSolvable(maze)).toBe(true);
       }
     });
+
+    it("returns false for an unsolvable maze", () => {
+      // Create a maze with all walls (no passages)
+      const unsolvableMaze = {
+        width: 3,
+        height: 3,
+        cells: Array.from({ length: 3 }, () =>
+          Array.from({ length: 3 }, () => ({
+            north: true,
+            south: true,
+            east: true,
+            west: true,
+          }))
+        ),
+        start: { x: 0, y: 0 },
+        end: { x: 2, y: 2 },
+      };
+      expect(isSolvable(unsolvableMaze)).toBe(false);
+    });
+
+    it("handles non-square mazes", () => {
+      const maze = generateMaze(8, 4);
+      expect(maze.width).toBe(8);
+      expect(maze.height).toBe(4);
+      expect(isSolvable(maze)).toBe(true);
+    });
   });
 
   describe("getCell", () => {
