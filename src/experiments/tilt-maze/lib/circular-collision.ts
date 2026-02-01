@@ -174,25 +174,23 @@ export function checkCircularWallCollision(
   }
 
   // Check center boundary (goal area boundary)
-  // Only collide if the innermost ring has walls
+  // Only collide if the ball is actually touching a segment with an inner wall
   if (dist - ball.radius < maze.centerRadius) {
-    // Calculate ball angle and angular tolerance for innermost ring check
     const ballAngleForCenter = Math.atan2(dy, dx);
-    const angularToleranceForCenter = dist > 0 ? ball.radius / dist : 0;
     const segCount = maze.segmentsPerRing[0];
 
-    // Check all segments in innermost ring that the ball might touch
-    for (let seg = 0; seg < segCount; seg++) {
-      if (maze.cells[0][seg].innerWall) {
-        const { startAngle, endAngle } = getSegmentAngles(maze, 0, seg);
-        if (isAngleInArc(ballAngleForCenter, startAngle, endAngle, angularToleranceForCenter)) {
-          return {
-            collided: true,
-            normal: { x: radialX, y: radialY }, // Push outward
-            penetration: maze.centerRadius - (dist - ball.radius) + COLLISION_MARGIN,
-          };
-        }
-      }
+    // Find which segment the ball CENTER is in (no tolerance - use exact position)
+    let normalizedAngle = ballAngleForCenter + Math.PI / 2;
+    if (normalizedAngle < 0) normalizedAngle += 2 * Math.PI;
+    const ballSegment = Math.floor((normalizedAngle / (2 * Math.PI)) * segCount) % segCount;
+
+    // Only collide if the ball's segment has an inner wall
+    if (maze.cells[0][ballSegment].innerWall) {
+      return {
+        collided: true,
+        normal: { x: radialX, y: radialY }, // Push outward
+        penetration: maze.centerRadius - (dist - ball.radius) + COLLISION_MARGIN,
+      };
     }
   }
 

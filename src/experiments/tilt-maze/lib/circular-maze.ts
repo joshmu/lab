@@ -193,10 +193,17 @@ export function generateCircularMaze(
     addNeighbors(cell.ring, cell.segment);
   }
 
-  // Ensure path to center: open inner wall of at least one innermost ring cell
+  // Ensure path to center: open inner walls for a wider entrance (2-3 cells)
   const innerRingCells = segmentsPerRing[0];
   const openCell = Math.floor(random() * innerRingCells);
+
+  // Open the main cell and its neighbors for a wider entrance
   cells[0][openCell].innerWall = false;
+  cells[0][(openCell + 1) % innerRingCells].innerWall = false;
+  // Open a third cell if there are enough segments
+  if (innerRingCells >= 6) {
+    cells[0][(openCell - 1 + innerRingCells) % innerRingCells].innerWall = false;
+  }
 
   return {
     rings,
