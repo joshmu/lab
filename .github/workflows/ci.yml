@@ -69,6 +69,9 @@ jobs:
       - name: Lint markdown
         run: pnpm lint:md
 
+      - name: Generate registry
+        run: pnpm generate:registry
+
       - name: Dead code detection (knip)
         run: pnpm lint:knip
 
