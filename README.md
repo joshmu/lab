@@ -62,21 +62,21 @@ pnpm generate:registry
 
 ## Commands
 
-| Command                  | Description                                    |
-| ------------------------ | ---------------------------------------------- |
-| `pnpm dev`               | Start development server with Turbopack        |
-| `pnpm build`             | Generate registry and build for production     |
-| `pnpm start`             | Start production server                        |
-| `pnpm lint`              | Run Oxlint                                     |
-| `pnpm format`            | Format code with oxfmt                         |
-| `pnpm format:check`      | Check formatting                               |
-| `pnpm lint:md`           | Lint markdown files                            |
-| `pnpm lint:knip`         | Dead code detection                            |
-| `pnpm check-types`       | Run TypeScript type checking                   |
-| `pnpm test`              | Run tests with Vitest                          |
-| `pnpm test:coverage`     | Run tests with coverage                        |
-| `pnpm audit`             | Dependency vulnerability scan                  |
-| `pnpm generate:registry` | Regenerate experiments registry                |
+| Command                  | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| `pnpm dev`               | Start development server with Turbopack           |
+| `pnpm build`             | Generate registry and build for production        |
+| `pnpm start`             | Start production server                           |
+| `pnpm lint`              | Run Oxlint                                        |
+| `pnpm format`            | Format code with oxfmt                            |
+| `pnpm format:check`      | Check formatting                                  |
+| `pnpm lint:md`           | Lint markdown files                               |
+| `pnpm lint:knip`         | Dead code detection                               |
+| `pnpm check-types`       | Run TypeScript type checking                      |
+| `pnpm test`              | Run tests with Vitest                             |
+| `pnpm test:coverage`     | Run tests with coverage                           |
+| `pnpm audit`             | Dependency vulnerability scan                     |
+| `pnpm generate:registry` | Regenerate experiments registry                   |
 | `pnpm validate`          | Run all checks (lint, format, types, test, build) |
 
 ## Stack
@@ -149,13 +149,13 @@ Husky + lint-staged run on every commit:
 
 GitHub Actions runs on push to `main` and PRs:
 
-| Job | Description | Blocking |
-|-----|-------------|----------|
-| commitlint | Validates commit messages (PRs only) | Yes |
-| lint | Oxlint + oxfmt + markdownlint + knip | Yes (knip non-blocking) |
-| typecheck | TypeScript type checking | Yes |
-| test | Vitest with coverage thresholds | Yes |
-| build | Next.js production build | Yes |
-| audit | pnpm audit | No |
-| secrets | Gitleaks secret scanning | Yes |
-| ci-status | Gate job (aggregates all results) | Yes |
+| Job        | Description                          | Blocking                |
+| ---------- | ------------------------------------ | ----------------------- |
+| commitlint | Validates commit messages (PRs only) | Yes                     |
+| lint       | Oxlint + oxfmt + markdownlint + knip | Yes (knip non-blocking) |
+| typecheck  | TypeScript type checking             | Yes                     |
+| test       | Vitest with coverage thresholds      | Yes                     |
+| build      | Next.js production build             | Yes                     |
+| audit      | pnpm audit                           | No                      |
+| secrets    | Gitleaks secret scanning             | Yes                     |
+| ci-status  | Gate job (aggregates all results)    | Yes                     |

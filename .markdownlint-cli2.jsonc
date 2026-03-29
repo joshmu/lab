@@ -11,8 +11,8 @@
     // Allow duplicate headings in different sections
     "MD024": { "siblings_only": true },
     // Disable table column style enforcement
-    "MD060": false
+    "MD060": false,
   },
   "globs": ["**/*.md"],
-  "ignores": ["node_modules", ".next"]
+  "ignores": ["node_modules", ".next"],
 }

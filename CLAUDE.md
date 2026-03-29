@@ -101,16 +101,16 @@ This project uses the **Lyra** style from shadcn/ui ("Boxy and sharp. Pairs well
 
 GitHub Actions runs on push to `main` and PRs:
 
-| Job | Description | Blocking |
-|-----|-------------|----------|
-| **commitlint** | Validates commit messages (PRs only) | Yes |
-| **lint** | Oxlint + oxfmt + markdownlint + knip | Yes (knip non-blocking) |
-| **typecheck** | `tsc --noEmit` | Yes |
-| **test** | Vitest with coverage thresholds | Yes |
-| **build** | Next.js production build (depends on lint/typecheck/test) | Yes |
-| **audit** | `pnpm audit --prod` | No |
-| **secrets** | Gitleaks secret scanning | Yes |
-| **ci-status** | Gate job aggregating all results | Yes |
+| Job            | Description                                               | Blocking                |
+| -------------- | --------------------------------------------------------- | ----------------------- |
+| **commitlint** | Validates commit messages (PRs only)                      | Yes                     |
+| **lint**       | Oxlint + oxfmt + markdownlint + knip                      | Yes (knip non-blocking) |
+| **typecheck**  | `tsc --noEmit`                                            | Yes                     |
+| **test**       | Vitest with coverage thresholds                           | Yes                     |
+| **build**      | Next.js production build (depends on lint/typecheck/test) | Yes                     |
+| **audit**      | `pnpm audit --prod`                                       | No                      |
+| **secrets**    | Gitleaks secret scanning                                  | Yes                     |
+| **ci-status**  | Gate job aggregating all results                          | Yes                     |
 
 Concurrency control cancels in-progress PR runs. All jobs have explicit timeouts.
 

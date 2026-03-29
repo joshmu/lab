@@ -20,7 +20,7 @@
     "lint:md": "markdownlint-cli2 '**/*.md' '#node_modules'",
     "lint:knip": "knip",
     "audit": "pnpm audit --prod",
-    "validate": "pnpm lint && pnpm check-types && pnpm test && pnpm build",
+    "validate": "pnpm lint && pnpm format:check && pnpm lint:md && pnpm check-types && pnpm test && pnpm build",
     "prepare": "husky"
   },
   "dependencies": {
