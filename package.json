@@ -19,6 +19,7 @@
     "generate:registry": "tsx scripts/generate-registry.ts",
     "lint:md": "markdownlint-cli2 '**/*.md' '#node_modules'",
     "lint:knip": "knip",
+    "audit": "pnpm audit --prod",
     "validate": "pnpm lint && pnpm check-types && pnpm test && pnpm build",
     "prepare": "husky"
   },
