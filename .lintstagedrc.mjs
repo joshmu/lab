@@ -1,4 +1,4 @@
 export default {
-  "*.{ts,tsx}": ["oxlint -c .oxlintrc.json", "prettier --check"],
-  "*.{json,md,css}": ["prettier --check"],
+  "*.{ts,tsx}": ["oxlint -c .oxlintrc.json", "oxfmt --check"],
+  "*.{json,css}": ["oxfmt --check"],
 };

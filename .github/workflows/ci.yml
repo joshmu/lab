@@ -37,7 +37,7 @@ jobs:
       - name: Run Oxlint
         run: pnpm lint
 
-      - name: Check formatting
+      - name: Check formatting (oxfmt)
         run: pnpm format:check
 
   typecheck:
