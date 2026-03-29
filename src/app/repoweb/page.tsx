@@ -20,9 +20,7 @@ export default function RepoWebPage() {
       <section className="mb-8">
         <h2 className="mb-3 text-xl font-bold">How to use</h2>
         <div className="bg-muted p-4">
-          <code className="text-sm">
-            /repoweb/github.com/&#123;owner&#125;/&#123;repo&#125;/&#123;path&#125;
-          </code>
+          <code className="text-sm">/repoweb/owner/repo/path</code>
         </div>
       </section>
 
@@ -31,10 +29,10 @@ export default function RepoWebPage() {
         <ul className="space-y-2">
           <li>
             <Link
-              href="/repoweb/github.com/sindresorhus/is"
+              href="/repoweb/sindresorhus/is"
               className="text-primary hover:underline"
             >
-              /repoweb/github.com/sindresorhus/is
+              /repoweb/sindresorhus/is
             </Link>
             <span className="text-muted-foreground ml-2 text-sm">
               — repo root
@@ -42,10 +40,10 @@ export default function RepoWebPage() {
           </li>
           <li>
             <Link
-              href="/repoweb/github.com/sindresorhus/is/source"
+              href="/repoweb/sindresorhus/is/source"
               className="text-primary hover:underline"
             >
-              /repoweb/github.com/sindresorhus/is/source
+              /repoweb/sindresorhus/is/source
             </Link>
             <span className="text-muted-foreground ml-2 text-sm">
               — directory

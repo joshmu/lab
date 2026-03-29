@@ -124,7 +124,7 @@ src/
 A built-in GitHub repository proxy for AI agents. Browse any public repo as plain text:
 
 ```
-lab.joshmu.com/repoweb/github.com/{owner}/{repo}/{path}
+lab.joshmu.com/repoweb/owner/repo/path
 ```
 
 All responses are `text/plain` — no rendering, just raw content optimized for AI consumption. See [docs/repoweb.md](docs/repoweb.md) for full documentation.
