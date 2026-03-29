@@ -70,6 +70,36 @@ This project uses the **Lyra** style from shadcn/ui ("Boxy and sharp. Pairs well
 - Neutral color scheme with dark mode support (`.dark` class)
 - Theme variables defined in `src/app/globals.css`
 
+## RepoWeb — GitHub Proxy for AI Agents
+
+A top-level route (`/repoweb/`) that proxies GitHub's Contents API, serving repository files and directories as plain text for AI agent consumption.
+
+### Key Files
+
+- `src/lib/github.ts` — GitHub Contents API client (fetch, types, error handling)
+- `src/app/repoweb/[...path]/route.ts` — Catch-all route handler (URL parsing, response formatting)
+- `src/app/repoweb/page.tsx` — Landing/docs page
+
+### URL Pattern
+
+```
+/repoweb/github.com/{owner}/{repo}/{path}
+```
+
+### How It Works
+
+- Uses GitHub Contents API (`GET /repos/{owner}/{repo}/contents/{path}`) on-demand per request
+- No cloning, no persistent storage, no external dependencies
+- Responses are `text/plain` with edge caching via `Cache-Control` headers
+- Optional `GITHUB_TOKEN` env var for higher rate limits (5,000 vs 60 req/hr)
+
+### Extending
+
+- Branch support: add `ref` query param, pass to GitHub API
+- Search: expose GitHub Code Search API via query parameter
+- Private repos: use token with `repo` scope
+- See `docs/repoweb.md` for full documentation
+
 ## Important Notes
 
 - The registry is auto-generated - don't edit `src/experiments/registry.ts` manually

@@ -23,7 +23,11 @@ export interface UseDeviceOrientationResult {
 function needsPermission(): boolean {
   return (
     typeof DeviceOrientationEvent !== "undefined" &&
-    typeof (DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }).requestPermission === "function"
+    typeof (
+      DeviceOrientationEvent as unknown as {
+        requestPermission?: () => Promise<string>;
+      }
+    ).requestPermission === "function"
   );
 }
 
@@ -142,7 +146,9 @@ export function useDeviceOrientation(): UseDeviceOrientationResult {
       ...prev,
       supported: isSupported(),
       permissionState: isSupported()
-        ? (needsPermission() ? "prompt" : "granted")
+        ? needsPermission()
+          ? "prompt"
+          : "granted"
         : "unavailable",
     }));
 

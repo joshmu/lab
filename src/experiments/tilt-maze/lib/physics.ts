@@ -87,7 +87,10 @@ export function updateBall(
   let vy = ball.vy * frictionFactor;
 
   // Stop very slow movement
-  if (Math.abs(vx) < MIN_VELOCITY_THRESHOLD && Math.abs(vy) < MIN_VELOCITY_THRESHOLD) {
+  if (
+    Math.abs(vx) < MIN_VELOCITY_THRESHOLD &&
+    Math.abs(vy) < MIN_VELOCITY_THRESHOLD
+  ) {
     vx = 0;
     vy = 0;
   }

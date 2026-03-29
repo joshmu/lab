@@ -41,7 +41,8 @@ export function renderCircularMaze(
   centerY: number,
   config: CircularRenderConfig
 ): void {
-  const { wallColor, wallWidth, goalColor, backgroundColor, pathColor } = config;
+  const { wallColor, wallWidth, goalColor, backgroundColor, pathColor } =
+    config;
 
   // Clear and fill background
   ctx.fillStyle = backgroundColor;
@@ -118,7 +119,11 @@ export function renderCircularMaze(
         arcStart = seg;
       } else if (!hasWall && arcStart !== -1) {
         // Draw arc from arcStart to seg-1
-        const { startAngle } = getSegmentAngles(maze, ring, arcStart % segCount);
+        const { startAngle } = getSegmentAngles(
+          maze,
+          ring,
+          arcStart % segCount
+        );
         const { endAngle } = getSegmentAngles(maze, ring, (seg - 1) % segCount);
         ctx.beginPath();
         ctx.arc(centerX, centerY, innerRadius, startAngle, endAngle);
@@ -145,7 +150,9 @@ export function renderCircularMaze(
       } else if (!hasWall && wallStart !== -1) {
         // Draw radial line from wallStart to ring-1
         const startRadius =
-          wallStart === 0 ? maze.centerRadius : getRingRadii(maze, wallStart).innerRadius;
+          wallStart === 0
+            ? maze.centerRadius
+            : getRingRadii(maze, wallStart).innerRadius;
         const endRadius = getRingRadii(maze, ring - 1).outerRadius;
 
         const x1 = centerX + Math.cos(endAngle) * startRadius;
@@ -165,7 +172,9 @@ export function renderCircularMaze(
     // Handle case where wall extends to outer boundary
     if (wallStart !== -1) {
       const startRadius =
-        wallStart === 0 ? maze.centerRadius : getRingRadii(maze, wallStart).innerRadius;
+        wallStart === 0
+          ? maze.centerRadius
+          : getRingRadii(maze, wallStart).innerRadius;
       const endRadius = maze.totalRadius;
 
       const x1 = centerX + Math.cos(endAngle) * startRadius;

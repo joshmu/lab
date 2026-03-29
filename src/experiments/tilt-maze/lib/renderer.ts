@@ -37,7 +37,14 @@ export function renderMaze(
   maze: Maze,
   config: RenderConfig
 ): void {
-  const { cellSize, wallColor, wallWidth, startColor, goalColor, backgroundColor } = config;
+  const {
+    cellSize,
+    wallColor,
+    wallWidth,
+    startColor,
+    goalColor,
+    backgroundColor,
+  } = config;
   const width = maze.width * cellSize;
   const height = maze.height * cellSize;
 

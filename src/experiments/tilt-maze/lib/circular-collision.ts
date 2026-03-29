@@ -103,7 +103,10 @@ function checkRadialWallCollision(
   // Check if ball is within the radial extent of the wall (between inner and outer radius)
   // Use a small margin to catch edge cases
   const radialMargin = ball.radius * 0.5;
-  if (ballDist < innerRadius - radialMargin || ballDist > outerRadius + radialMargin) {
+  if (
+    ballDist < innerRadius - radialMargin ||
+    ballDist > outerRadius + radialMargin
+  ) {
     return { collided: false };
   }
 
@@ -120,13 +123,18 @@ function checkRadialWallCollision(
 
     const toClosestX = ball.x - closestX;
     const toClosestY = ball.y - closestY;
-    const distToClosest = Math.sqrt(toClosestX * toClosestX + toClosestY * toClosestY);
+    const distToClosest = Math.sqrt(
+      toClosestX * toClosestX + toClosestY * toClosestY
+    );
 
     if (distToClosest < ball.radius && distToClosest > 0.001) {
       // Collision with endpoint - normal points from endpoint to ball
       return {
         collided: true,
-        normal: { x: toClosestX / distToClosest, y: toClosestY / distToClosest },
+        normal: {
+          x: toClosestX / distToClosest,
+          y: toClosestY / distToClosest,
+        },
         penetration: ball.radius - distToClosest + COLLISION_MARGIN,
       };
     }
@@ -182,14 +190,16 @@ export function checkCircularWallCollision(
     // Find which segment the ball CENTER is in (no tolerance - use exact position)
     let normalizedAngle = ballAngleForCenter + Math.PI / 2;
     if (normalizedAngle < 0) normalizedAngle += 2 * Math.PI;
-    const ballSegment = Math.floor((normalizedAngle / (2 * Math.PI)) * segCount) % segCount;
+    const ballSegment =
+      Math.floor((normalizedAngle / (2 * Math.PI)) * segCount) % segCount;
 
     // Only collide if the ball's segment has an inner wall
     if (maze.cells[0][ballSegment].innerWall) {
       return {
         collided: true,
         normal: { x: radialX, y: radialY }, // Push outward
-        penetration: maze.centerRadius - (dist - ball.radius) + COLLISION_MARGIN,
+        penetration:
+          maze.centerRadius - (dist - ball.radius) + COLLISION_MARGIN,
       };
     }
   }
@@ -284,12 +294,11 @@ export function checkCircularWallCollision(
       const adjOuterCell = maze.cells[ring + 1][adjOuterSegment];
 
       if (adjOuterCell.innerWall) {
-        const { startAngle: adjOuterStart, endAngle: adjOuterEnd } = getSegmentAngles(
-          maze,
-          ring + 1,
-          adjOuterSegment
-        );
-        if (isAngleInArc(ballAngle, adjOuterStart, adjOuterEnd, angularTolerance)) {
+        const { startAngle: adjOuterStart, endAngle: adjOuterEnd } =
+          getSegmentAngles(maze, ring + 1, adjOuterSegment);
+        if (
+          isAngleInArc(ballAngle, adjOuterStart, adjOuterEnd, angularTolerance)
+        ) {
           return {
             collided: true,
             normal: { x: -radialX, y: -radialY },
@@ -459,7 +468,12 @@ export function checkCircularCollisionWithSubsteps(
   substeps: number = 4
 ): CircularCollisionResult {
   // First check current position
-  const currentCollision = checkCircularWallCollision(ball, maze, centerX, centerY);
+  const currentCollision = checkCircularWallCollision(
+    ball,
+    maze,
+    centerX,
+    centerY
+  );
   if (currentCollision.collided) {
     return currentCollision;
   }
@@ -473,7 +487,12 @@ export function checkCircularCollisionWithSubsteps(
       y: prevBall.y + (ball.y - prevBall.y) * t,
     };
 
-    const collision = checkCircularWallCollision(interpBall, maze, centerX, centerY);
+    const collision = checkCircularWallCollision(
+      interpBall,
+      maze,
+      centerX,
+      centerY
+    );
     if (collision.collided) {
       return collision;
     }

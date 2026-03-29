@@ -24,7 +24,9 @@ export function isVibrationSupported(): boolean {
 /**
  * Vibrate on wall collision
  */
-export function vibrateOnCollision(config: HapticsConfig = defaultHapticsConfig): void {
+export function vibrateOnCollision(
+  config: HapticsConfig = defaultHapticsConfig
+): void {
   if (!config.enabled || !isVibrationSupported()) return;
   navigator.vibrate(config.wallHitDuration);
 }
@@ -32,7 +34,9 @@ export function vibrateOnCollision(config: HapticsConfig = defaultHapticsConfig)
 /**
  * Vibrate on win
  */
-export function vibrateOnWin(config: HapticsConfig = defaultHapticsConfig): void {
+export function vibrateOnWin(
+  config: HapticsConfig = defaultHapticsConfig
+): void {
   if (!config.enabled || !isVibrationSupported()) return;
   navigator.vibrate(config.winPattern);
 }

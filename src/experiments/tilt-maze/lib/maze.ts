@@ -185,13 +185,7 @@ export function isSolvable(maze: Maze): boolean {
       const nx = current.x + dx;
       const ny = current.y + dy;
 
-      if (
-        nx >= 0 &&
-        nx < width &&
-        ny >= 0 &&
-        ny < height &&
-        !visited[ny][nx]
-      ) {
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height && !visited[ny][nx]) {
         visited[ny][nx] = true;
         queue.push({ x: nx, y: ny });
       }

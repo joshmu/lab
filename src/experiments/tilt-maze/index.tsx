@@ -24,11 +24,7 @@ import {
   formatTime,
   type GameState,
 } from "./lib/gameState";
-import {
-  updateBall,
-  applyForce,
-  defaultPhysicsConfig,
-} from "./lib/physics";
+import { updateBall, applyForce, defaultPhysicsConfig } from "./lib/physics";
 import {
   checkCircularWallCollision,
   checkCircularCollisionWithSubsteps,
@@ -54,13 +50,19 @@ export default function TiltMazeExperiment() {
   const [gameState, setGameState] = useState<GameState>(createInitialState);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [useAccelerometer, setUseAccelerometer] = useState(false);
-  const [calibrationMessage, setCalibrationMessage] = useState<string | null>(null);
+  const [calibrationMessage, setCalibrationMessage] = useState<string | null>(
+    null
+  );
 
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
 
-  const { orientation, requestPermission, calibrate, getTilt: getAccelTilt } =
-    useDeviceOrientation();
+  const {
+    orientation,
+    requestPermission,
+    calibrate,
+    getTilt: getAccelTilt,
+  } = useDeviceOrientation();
   const { getTilt: getKeyboardTilt } = useKeyboard();
 
   // Handle calibration with visual feedback
@@ -112,21 +114,22 @@ export default function TiltMazeExperiment() {
 
       for (let i = 0; i < maxIterations; i++) {
         // Use substep detection on first iteration to catch tunneling
-        const collision = i === 0
-          ? checkCircularCollisionWithSubsteps(
-              ball,
-              prevBall,
-              state.maze,
-              state.centerX,
-              state.centerY,
-              8 // substeps for better tunneling prevention
-            )
-          : checkCircularWallCollision(
-              ball,
-              state.maze,
-              state.centerX,
-              state.centerY
-            );
+        const collision =
+          i === 0
+            ? checkCircularCollisionWithSubsteps(
+                ball,
+                prevBall,
+                state.maze,
+                state.centerX,
+                state.centerY,
+                8 // substeps for better tunneling prevention
+              )
+            : checkCircularWallCollision(
+                ball,
+                state.maze,
+                state.centerX,
+                state.centerY
+              );
 
         if (collision.collided && collision.normal) {
           // Only reflect velocity on the FIRST collision to prevent oscillation
@@ -151,7 +154,8 @@ export default function TiltMazeExperiment() {
       // If ball is in contact with a wall, clamp velocity pointing into the wall
       // This prevents oscillation when continuously tilting toward a wall
       if (lastContactNormal) {
-        const dot = ball.vx * lastContactNormal.x + ball.vy * lastContactNormal.y;
+        const dot =
+          ball.vx * lastContactNormal.x + ball.vy * lastContactNormal.y;
         if (dot < 0) {
           // Remove velocity component going into wall (allows sliding along wall)
           ball = {
@@ -208,10 +212,7 @@ export default function TiltMazeExperiment() {
 
   // Handle start game
   const handleStart = async () => {
-    if (
-      orientation.permissionState === "prompt" &&
-      orientation.supported
-    ) {
+    if (orientation.permissionState === "prompt" && orientation.supported) {
       const granted = await requestPermission();
       if (granted) {
         setUseAccelerometer(true);
@@ -258,7 +259,7 @@ export default function TiltMazeExperiment() {
         <CardContent className="flex flex-col items-center gap-4">
           {/* Game Canvas */}
           <div
-            className="relative border-2 border-neutral-200 dark:border-neutral-800 rounded-full overflow-hidden"
+            className="relative overflow-hidden rounded-full border-2 border-neutral-200 dark:border-neutral-800"
             style={{ width: canvasSize, height: canvasSize }}
           >
             <canvas
@@ -269,9 +270,9 @@ export default function TiltMazeExperiment() {
 
             {/* Start overlay */}
             {gameState.status === "start" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-neutral-950/90 rounded-full">
+              <div className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-white/90 dark:bg-neutral-950/90">
                 <h2 className="mb-4 text-xl font-bold">Circular Maze</h2>
-                <p className="text-muted-foreground mb-4 text-center text-sm px-8">
+                <p className="text-muted-foreground mb-4 px-8 text-center text-sm">
                   Navigate from the outer ring to the{" "}
                   <span className="text-blue-500">blue center</span>
                 </p>
@@ -283,7 +284,7 @@ export default function TiltMazeExperiment() {
 
             {/* Win overlay */}
             {gameState.status === "won" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 dark:bg-neutral-950/90 rounded-full">
+              <div className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-white/90 dark:bg-neutral-950/90">
                 <h2 className="mb-2 text-xl font-bold text-green-600">
                   Level Complete!
                 </h2>
@@ -302,7 +303,9 @@ export default function TiltMazeExperiment() {
                   >
                     <RotateCcw className="mr-2 h-4 w-4" /> Retry
                   </Button>
-                  <Button onClick={() => setGameState((prev) => nextLevel(prev))}>
+                  <Button
+                    onClick={() => setGameState((prev) => nextLevel(prev))}
+                  >
                     Next <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -319,7 +322,7 @@ export default function TiltMazeExperiment() {
 
           {/* Calibration Message */}
           {calibrationMessage && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md font-medium text-sm animate-pulse">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 animate-pulse rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white">
               {calibrationMessage}
             </div>
           )}

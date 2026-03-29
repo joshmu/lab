@@ -31,6 +31,29 @@ export default function HomePage() {
         </p>
       </header>
 
+      {/* Tools */}
+      <section className="mb-12">
+        <h2 className="text-muted-foreground mb-3 text-sm font-bold tracking-wider uppercase">
+          Tools
+        </h2>
+        <Link href="/repoweb" className="group block">
+          <div className="hover:border-primary/50 border-border border p-4 transition-colors">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="group-hover:text-primary font-bold transition-colors">
+                  RepoWeb
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  GitHub repository proxy — makes any public repo readable by AI
+                  agents via plain text HTTP.
+                </p>
+              </div>
+              <ExternalLink className="text-muted-foreground h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* Experiments Grid */}
       {publishedExperiments.length === 0 ? (
         <div className="py-16 text-center">
