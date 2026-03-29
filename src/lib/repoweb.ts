@@ -5,16 +5,13 @@ export function parseRepoPath(segments: string[]): {
   repo: string;
   path: string;
 } | null {
-  // Skip leading "github.com" if present for backwards compatibility
-  const start = segments[0] === "github.com" ? 1 : 0;
-  const rest = segments.slice(start);
-  if (rest.length < 2) {
+  if (segments.length < 2) {
     return null;
   }
   return {
-    owner: rest[0],
-    repo: rest[1],
-    path: rest.slice(2).join("/"),
+    owner: segments[0],
+    repo: segments[1],
+    path: segments.slice(2).join("/"),
   };
 }
 
