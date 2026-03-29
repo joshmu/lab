@@ -7,16 +7,10 @@ const config: KnipConfig = {
     "src/app/**/route.ts",
     "src/experiments/**/index.tsx",
     "src/experiments/**/meta.ts",
-    "scripts/generate-registry.ts",
+    "src/experiments/registry.ts",
   ],
   project: ["src/**/*.{ts,tsx}"],
-  ignore: ["src/experiments/registry.ts"],
-  ignoreDependencies: [
-    "tw-animate-css",
-    "@tailwindcss/postcss",
-    "@testing-library/dom",
-    "tailwindcss",
-  ],
+  ignoreDependencies: ["tw-animate-css", "tailwindcss", "postcss"],
 };
 
 export default config;

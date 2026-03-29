@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-export interface GameLoopOptions {
+interface GameLoopOptions {
   targetFps?: number;
   onUpdate: (deltaTime: number) => void;
   onRender: () => void;

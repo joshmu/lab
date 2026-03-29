@@ -21,7 +21,7 @@ export interface GameState {
   centerY: number;
 }
 
-export interface LevelConfig {
+interface LevelConfig {
   rings: number;
   canvasSize: number;
   ballRadius: number;

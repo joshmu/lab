@@ -11,12 +11,12 @@ import {
   getRingRadii,
 } from "./circular-maze";
 
-export interface Vector2 {
+interface Vector2 {
   x: number;
   y: number;
 }
 
-export interface CircularCollisionResult {
+interface CircularCollisionResult {
   collided: boolean;
   normal?: Vector2;
   penetration?: number;

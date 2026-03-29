@@ -5,14 +5,14 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 
-export interface OrientationState {
+interface OrientationState {
   beta: number; // Front-to-back tilt (-180 to 180)
   gamma: number; // Left-to-right tilt (-90 to 90)
   supported: boolean;
   permissionState: "prompt" | "granted" | "denied" | "unavailable";
 }
 
-export interface UseDeviceOrientationResult {
+interface UseDeviceOrientationResult {
   orientation: OrientationState;
   requestPermission: () => Promise<boolean>;
   calibrate: () => void;

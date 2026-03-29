@@ -2,13 +2,13 @@
  * Haptic feedback utilities using the Web Vibration API
  */
 
-export interface HapticsConfig {
+interface HapticsConfig {
   enabled: boolean;
   wallHitDuration: number;
   winPattern: number[];
 }
 
-export const defaultHapticsConfig: HapticsConfig = {
+const defaultHapticsConfig: HapticsConfig = {
   enabled: true,
   wallHitDuration: 50,
   winPattern: [100, 50, 100, 50, 200],
@@ -39,12 +39,4 @@ export function vibrateOnWin(
 ): void {
   if (!config.enabled || !isVibrationSupported()) return;
   navigator.vibrate(config.winPattern);
-}
-
-/**
- * Stop any ongoing vibration
- */
-export function stopVibration(): void {
-  if (!isVibrationSupported()) return;
-  navigator.vibrate(0);
 }

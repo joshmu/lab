@@ -30,7 +30,7 @@ const KEY_MAP: Record<string, Direction> = {
   D: "right",
 };
 
-export interface UseKeyboardResult {
+interface UseKeyboardResult {
   getTilt: () => { x: number; y: number };
 }
 

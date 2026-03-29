@@ -1,5 +1,3 @@
-import type { ComponentType } from "react";
-
 /**
  * Experiment metadata - defines how an experiment appears in the registry
  */
@@ -21,14 +19,6 @@ export interface ExperimentMeta {
 }
 
 /**
- * Complete experiment definition including the component
- */
-export interface Experiment {
-  meta: ExperimentMeta;
-  component: ComponentType;
-}
-
-/**
  * Registry entry - what gets stored in the generated registry
  */
 export interface RegistryEntry {
@@ -40,8 +30,3 @@ export interface RegistryEntry {
   updatedAt?: string;
   status: "draft" | "published";
 }
-
-/**
- * The complete registry of all experiments
- */
-export type ExperimentsRegistry = RegistryEntry[];

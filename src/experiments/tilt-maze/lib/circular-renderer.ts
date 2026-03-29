@@ -9,7 +9,7 @@ import {
 } from "./circular-maze";
 import { type Ball } from "./physics";
 
-export interface CircularRenderConfig {
+interface CircularRenderConfig {
   wallColor: string;
   wallWidth: number;
   ballColor: string;

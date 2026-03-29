@@ -31,14 +31,14 @@ export interface GitHubDirEntry {
   download_url: string | null;
 }
 
-export interface GitHubRepo {
+interface GitHubRepo {
   default_branch: string;
   description: string | null;
   full_name: string;
   stargazers_count: number;
 }
 
-export type GitHubContentsResponse = GitHubFile | GitHubDirEntry[];
+type GitHubContentsResponse = GitHubFile | GitHubDirEntry[];
 
 export class GitHubApiError extends Error {
   constructor(
