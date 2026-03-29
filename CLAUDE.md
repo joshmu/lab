@@ -83,7 +83,7 @@ A top-level route (`/repoweb/`) that proxies GitHub's Contents API, serving repo
 ### URL Pattern
 
 ```
-/repoweb/github.com/{owner}/{repo}/{path}
+/repoweb/owner/repo/path
 ```
 
 ### How It Works

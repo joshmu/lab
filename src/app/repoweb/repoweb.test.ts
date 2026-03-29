@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { parseGitHubPath, renderDirectory } from "@/lib/repoweb";
+import { parseRepoPath, renderDirectory } from "@/lib/repoweb";
 
-describe("parseGitHubPath", () => {
-  it("parses valid github.com paths", () => {
-    expect(parseGitHubPath(["github.com", "owner", "repo"])).toEqual({
+describe("parseRepoPath", () => {
+  it("parses owner/repo paths", () => {
+    expect(parseRepoPath(["owner", "repo"])).toEqual({
       owner: "owner",
       repo: "repo",
       path: "",
@@ -11,26 +11,28 @@ describe("parseGitHubPath", () => {
   });
 
   it("parses paths with file path segments", () => {
-    expect(
-      parseGitHubPath(["github.com", "owner", "repo", "src", "index.ts"])
-    ).toEqual({
+    expect(parseRepoPath(["owner", "repo", "src", "index.ts"])).toEqual({
       owner: "owner",
       repo: "repo",
       path: "src/index.ts",
     });
   });
 
-  it("returns null for non-github.com hosts", () => {
-    expect(parseGitHubPath(["gitlab.com", "owner", "repo"])).toBeNull();
+  it("strips leading github.com for backwards compatibility", () => {
+    expect(parseRepoPath(["github.com", "owner", "repo"])).toEqual({
+      owner: "owner",
+      repo: "repo",
+      path: "",
+    });
   });
 
   it("returns null for too few segments", () => {
-    expect(parseGitHubPath(["github.com"])).toBeNull();
-    expect(parseGitHubPath(["github.com", "owner"])).toBeNull();
+    expect(parseRepoPath(["owner"])).toBeNull();
+    expect(parseRepoPath(["github.com", "owner"])).toBeNull();
   });
 
   it("returns null for empty segments", () => {
-    expect(parseGitHubPath([])).toBeNull();
+    expect(parseRepoPath([])).toBeNull();
   });
 });
 

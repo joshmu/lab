@@ -4,22 +4,22 @@
 
 RepoWeb is a lightweight HTTP proxy that serves any public GitHub repository as plain text. Files return raw content. Directories return a listing. No rendering, no transformation.
 
-Hosted at: `lab.joshmu.com/repoweb/`
+Hosted at: `lab.joshmu.dev/repoweb/`
 
 ## URL Format
 
 ```
-/repoweb/github.com/{owner}/{repo}          → repo root directory listing
-/repoweb/github.com/{owner}/{repo}/{path}   → file content or directory listing
+/repoweb/owner/repo          → repo root directory listing
+/repoweb/owner/repo/path     → file content or directory listing
 ```
 
 ### Examples
 
-| URL                                                   | Returns                     |
-| ----------------------------------------------------- | --------------------------- |
-| `/repoweb/github.com/sindresorhus/is`                 | Root directory listing      |
-| `/repoweb/github.com/sindresorhus/is/source`          | `source/` directory listing |
-| `/repoweb/github.com/sindresorhus/is/source/index.ts` | Raw file content            |
+| URL                                        | Returns                     |
+| ------------------------------------------ | --------------------------- |
+| `/repoweb/sindresorhus/is`                 | Root directory listing      |
+| `/repoweb/sindresorhus/is/source`          | `source/` directory listing |
+| `/repoweb/sindresorhus/is/source/index.ts` | Raw file content            |
 
 ## Response Format
 
@@ -81,7 +81,8 @@ Error (404): Not found: owner/repo/nonexistent/path
 ```
 src/
 ├── lib/
-│   └── github.ts              # GitHub Contents API client
+│   ├── github.ts              # GitHub Contents API client
+│   └── repoweb.ts             # URL parsing and directory rendering
 ├── app/
 │   └── repoweb/
 │       ├── page.tsx            # Landing/docs page
@@ -91,7 +92,7 @@ src/
 
 ### How It Works
 
-1. Request hits `/repoweb/github.com/{owner}/{repo}/{path}`
+1. Request hits `/repoweb/owner/repo/path`
 2. Route handler parses URL segments → owner, repo, path
 3. Calls GitHub Contents API (`GET /repos/{owner}/{repo}/contents/{path}`)
 4. Directory → text listing; File → decoded base64 content

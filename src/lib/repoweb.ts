@@ -1,17 +1,20 @@
 import { formatSize } from "./github";
 
-export function parseGitHubPath(segments: string[]): {
+export function parseRepoPath(segments: string[]): {
   owner: string;
   repo: string;
   path: string;
 } | null {
-  if (segments.length < 3 || segments[0] !== "github.com") {
+  // Skip leading "github.com" if present for backwards compatibility
+  const start = segments[0] === "github.com" ? 1 : 0;
+  const rest = segments.slice(start);
+  if (rest.length < 2) {
     return null;
   }
   return {
-    owner: segments[1],
-    repo: segments[2],
-    path: segments.slice(3).join("/"),
+    owner: rest[0],
+    repo: rest[1],
+    path: rest.slice(2).join("/"),
   };
 }
 

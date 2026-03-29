@@ -5,7 +5,7 @@ import {
   isDirectory,
   GitHubApiError,
 } from "@/lib/github";
-import { parseGitHubPath, renderDirectory } from "@/lib/repoweb";
+import { parseRepoPath, renderDirectory } from "@/lib/repoweb";
 
 const CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
@@ -23,11 +23,11 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ): Promise<Response> {
   const { path: segments } = await params;
-  const parsed = parseGitHubPath(segments);
+  const parsed = parseRepoPath(segments);
 
   if (!parsed) {
     return textResponse(
-      "Error: Invalid URL format\nExpected: /repoweb/github.com/{owner}/{repo}/{path}",
+      "Error: Invalid URL format\nExpected: /repoweb/owner/repo/path",
       400
     );
   }
