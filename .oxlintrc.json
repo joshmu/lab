@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicolo-ribaudo/oxc-project/json-schemas/oxlint/.oxlintrc.json",
+  "plugins": ["react", "typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "typescript/no-explicit-any": "warn",
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off",
+    "unicorn/numeric-separators-style": "off",
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-new-array": "off"
+  },
+  "ignorePatterns": [
+    ".next",
+    "node_modules",
+    "coverage",
+    "src/experiments/registry.ts"
+  ]
+}
