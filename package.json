@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "generate:registry": "tsx scripts/generate-registry.ts",
-    "validate": "pnpm lint && pnpm check-types && pnpm test && pnpm build"
+    "validate": "pnpm lint && pnpm check-types && pnpm test && pnpm build",
+    "prepare": "husky"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -30,6 +31,8 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "^9.28.0",
     "@tailwindcss/postcss": "^4.1.7",
     "@testing-library/dom": "^10.4.0",
@@ -44,7 +47,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "glob": "^11.0.2",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4.1.7",
