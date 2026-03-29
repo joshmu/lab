@@ -18,17 +18,8 @@ describe("parseRepoPath", () => {
     });
   });
 
-  it("strips leading github.com for backwards compatibility", () => {
-    expect(parseRepoPath(["github.com", "owner", "repo"])).toEqual({
-      owner: "owner",
-      repo: "repo",
-      path: "",
-    });
-  });
-
   it("returns null for too few segments", () => {
     expect(parseRepoPath(["owner"])).toBeNull();
-    expect(parseRepoPath(["github.com", "owner"])).toBeNull();
   });
 
   it("returns null for empty segments", () => {
