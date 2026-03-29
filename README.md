@@ -119,6 +119,16 @@ src/
     └── setup.ts           # Test configuration
 ```
 
+## RepoWeb
+
+A built-in GitHub repository proxy for AI agents. Browse any public repo as plain text:
+
+```
+lab.joshmu.com/repoweb/github.com/{owner}/{repo}/{path}
+```
+
+All responses are `text/plain` — no rendering, just raw content optimized for AI consumption. See [docs/repoweb.md](docs/repoweb.md) for full documentation.
+
 ## CI/CD
 
 The project includes a GitHub Actions workflow that runs on every push and PR:

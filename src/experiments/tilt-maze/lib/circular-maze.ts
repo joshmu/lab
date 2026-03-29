@@ -4,16 +4,16 @@
  */
 
 export interface CircularCell {
-  innerWall: boolean;  // Wall toward center
-  outerWall: boolean;  // Wall away from center
-  cwWall: boolean;     // Clockwise wall
-  ccwWall: boolean;    // Counter-clockwise wall
+  innerWall: boolean; // Wall toward center
+  outerWall: boolean; // Wall away from center
+  cwWall: boolean; // Clockwise wall
+  ccwWall: boolean; // Counter-clockwise wall
 }
 
 export interface CircularMaze {
   rings: number;
   segmentsPerRing: number[];
-  cells: CircularCell[][];  // [ring][segment]
+  cells: CircularCell[][]; // [ring][segment]
   centerRadius: number;
   ringWidth: number;
   totalRadius: number;
@@ -200,7 +200,8 @@ export function generateCircularMaze(
   cells[0][(openCell + 1) % innerRingCells].innerWall = false;
   // Open a third cell if there are enough segments
   if (innerRingCells >= 6) {
-    cells[0][(openCell - 1 + innerRingCells) % innerRingCells].innerWall = false;
+    cells[0][(openCell - 1 + innerRingCells) % innerRingCells].innerWall =
+      false;
   }
 
   return {
