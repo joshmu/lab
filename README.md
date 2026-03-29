@@ -62,17 +62,22 @@ pnpm generate:registry
 
 ## Commands
 
-| Command                  | Description                                |
-| ------------------------ | ------------------------------------------ |
-| `pnpm dev`               | Start development server with Turbopack    |
-| `pnpm build`             | Generate registry and build for production |
-| `pnpm start`             | Start production server                    |
-| `pnpm lint`              | Run ESLint                                 |
-| `pnpm format`            | Format code with Prettier                  |
-| `pnpm check-types`       | Run TypeScript type checking               |
-| `pnpm test`              | Run tests with Vitest                      |
-| `pnpm generate:registry` | Regenerate experiments registry            |
-| `pnpm validate`          | Run all checks (lint, types, test, build)  |
+| Command                  | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| `pnpm dev`               | Start development server with Turbopack           |
+| `pnpm build`             | Generate registry and build for production        |
+| `pnpm start`             | Start production server                           |
+| `pnpm lint`              | Run Oxlint                                        |
+| `pnpm format`            | Format code with oxfmt                            |
+| `pnpm format:check`      | Check formatting                                  |
+| `pnpm lint:md`           | Lint markdown files                               |
+| `pnpm lint:knip`         | Dead code detection                               |
+| `pnpm check-types`       | Run TypeScript type checking                      |
+| `pnpm test`              | Run tests with Vitest                             |
+| `pnpm test:coverage`     | Run tests with coverage                           |
+| `pnpm audit`             | Dependency vulnerability scan                     |
+| `pnpm generate:registry` | Regenerate experiments registry                   |
+| `pnpm validate`          | Run all checks (lint, format, types, test, build) |
 
 ## Stack
 
@@ -82,8 +87,8 @@ pnpm generate:registry
 - **Components**: shadcn/ui (Radix primitives)
 - **Icons**: Lucide React
 - **Testing**: Vitest + Testing Library
-- **Linting**: ESLint 9 (flat config)
-- **Formatting**: Prettier
+- **Linting**: Oxlint (react, typescript, unicorn plugins)
+- **Formatting**: oxfmt (with Tailwind class sorting)
 
 ## Theme: Lyra
 
@@ -97,7 +102,7 @@ Theme configuration is in `src/app/globals.css` with CSS variables.
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router
 │   ├── page.tsx           # Registry homepage
@@ -123,17 +128,34 @@ src/
 
 A built-in GitHub repository proxy for AI agents. Browse any public repo as plain text:
 
-```
+```text
 lab.joshmu.com/repoweb/owner/repo/path
 ```
 
 All responses are `text/plain` — no rendering, just raw content optimized for AI consumption. See [docs/repoweb.md](docs/repoweb.md) for full documentation.
 
-## CI/CD
+## Validation
 
-The project includes a GitHub Actions workflow that runs on every push and PR:
+### Pre-commit Hooks
 
-- **Lint**: ESLint + Prettier format check
-- **Type Check**: TypeScript compilation
-- **Test**: Vitest test suite
-- **Build**: Production build verification
+Husky + lint-staged run on every commit:
+
+- **Oxlint** + **oxfmt** on staged `.ts`/`.tsx` files
+- **oxfmt** on staged `.json`/`.css` files
+- **markdownlint** on staged `.md` files
+- **commitlint** on commit messages (conventional commits with required scope)
+
+### CI/CD
+
+GitHub Actions runs on push to `main` and PRs:
+
+| Job        | Description                          | Blocking                |
+| ---------- | ------------------------------------ | ----------------------- |
+| commitlint | Validates commit messages (PRs only) | Yes                     |
+| lint       | Oxlint + oxfmt + markdownlint + knip | Yes (knip non-blocking) |
+| typecheck  | TypeScript type checking             | Yes                     |
+| test       | Vitest with coverage thresholds      | Yes                     |
+| build      | Next.js production build             | Yes                     |
+| audit      | pnpm audit                           | No                      |
+| secrets    | Gitleaks secret scanning             | Yes                     |
+| ci-status  | Gate job (aggregates all results)    | Yes                     |

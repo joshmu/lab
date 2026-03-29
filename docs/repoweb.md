@@ -8,7 +8,7 @@ Hosted at: `lab.joshmu.dev/repoweb/`
 
 ## URL Format
 
-```
+```text
 /repoweb/owner/repo          → repo root directory listing
 /repoweb/owner/repo/path     → file content or directory listing
 ```
@@ -27,7 +27,7 @@ All responses are `Content-Type: text/plain; charset=utf-8`.
 
 ### Directory Listing
 
-```
+```text
 owner/repo: A short description of the repo
 
 src/
@@ -42,7 +42,7 @@ package.json (482b)
 
 ### File Content
 
-```
+```typescript
 import { something } from "./lib";
 
 export function main() {
@@ -54,7 +54,7 @@ Files are returned as-is — no headers, no metadata, no wrapping. A true proxy.
 
 ### Errors
 
-```
+```text
 Error (404): Not found: owner/repo/nonexistent/path
 ```
 
@@ -78,7 +78,7 @@ Error (404): Not found: owner/repo/nonexistent/path
 
 ## Architecture
 
-```
+```text
 src/
 ├── lib/
 │   ├── github.ts              # GitHub Contents API client

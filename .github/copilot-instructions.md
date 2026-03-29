@@ -1,138 +1,90 @@
-# GitHub Copilot Instructions for Josh Mu's Lab
-
-This file provides specific instructions for GitHub Copilot when working with this experimental monorepo.
+# GitHub Copilot Instructions for Lab
 
 ## Repository Context
 
-Josh Mu's Lab is an experimental Turborepo monorepo for testing modern web development patterns. This is a space for creative experimentation, breaking things, and learning new technologies.
+Lab is a Next.js experiments registry for creating and showcasing web development experiments. Each experiment is a standalone page that gets automatically listed on the homepage.
 
-### Architecture Overview
+### Architecture
 
-- **Turborepo monorepo** with pnpm workspaces
-- **Next.js 15** with React 19 for cutting-edge features
-- **TypeScript** throughout for type safety
-- **Turbopack** enabled for fast development builds
-- **ESLint v9** with flat config format
+- **Next.js 15** with App Router and React 19
+- **TypeScript 5.x** with strict mode
+- **Tailwind CSS v4** with shadcn/ui Lyra theme (boxy, sharp, monospace)
+- **pnpm** package manager (v9.0.0)
 
 ### Project Structure
 
-```
-apps/
-├── web/           # Main Next.js experimental app (port 3000)
-├── docs/          # Documentation playground (port 3001)
-packages/
-├── ui/            # Shared React components (@repo/ui)
-├── eslint-config/ # Shared ESLint configurations
-├── typescript-config/ # Shared TypeScript configurations
+```text
+src/
+├── app/                    # Next.js App Router pages
+│   ├── page.tsx           # Registry homepage
+│   ├── experiments/[slug]/ # Dynamic experiment routes
+│   └── repoweb/           # GitHub proxy for AI agents
+├── components/ui/          # shadcn/ui components
+├── experiments/            # Experiment definitions
+│   └── [name]/
+│       ├── index.tsx       # Experiment component (default export)
+│       └── meta.ts         # Experiment metadata
+├── lib/                    # Shared utilities and types
+└── test/                   # Test setup
 ```
 
 ## Development Guidelines
 
-### Package Management
-
-- Use **pnpm v9.0.0** exclusively (specified in package.json)
-- Internal packages use `workspace:*` protocol
-- All packages extend shared TypeScript/ESLint configs
-
 ### Essential Commands
 
 ```bash
-pnpm install         # Install dependencies
-pnpm dev            # Start all apps (web:3000, docs:3001)
-pnpm build          # Build all apps and packages
-pnpm lint           # Run ESLint across all packages
-pnpm check-types    # Run TypeScript type checking
-pnpm format         # Format code with Prettier
-pnpm generate:component # Generate new React components (from packages/ui)
+pnpm dev              # Start dev server (http://localhost:3000)
+pnpm build            # Generate registry + production build
+pnpm validate         # Run all checks
+pnpm lint             # Run Oxlint
+pnpm format           # Format with oxfmt
+pnpm test             # Run Vitest tests
+pnpm generate:registry # Regenerate experiments registry
 ```
 
-### Development Workflow
+### Tooling
 
-- Both Next.js apps use Turbopack: `next dev --turbopack`
-- UI package exports components through `src/index.tsx`
-- Component generation uses Turborepo's gen feature
-- All packages must pass type checking before builds
+- **Linting**: Oxlint (react, typescript, unicorn plugins)
+- **Formatting**: oxfmt (with Tailwind class sorting)
+- **Testing**: Vitest + Testing Library (jsdom)
+- **Coverage**: v8 provider with thresholds
+- **Markdown**: markdownlint-cli2
+- **Dead code**: knip (non-blocking)
 
-## Code Style & Patterns
+### Commit Conventions
 
-### TypeScript
+All commits must use conventional format with a **required scope**:
 
-- Multiple config presets: base, nextjs, react-library
-- Strict type checking enabled
-- Use proper typing, avoid `any` where possible
+```text
+type(scope): description
+```
 
-### React Components
+Enforced by commitlint (pre-commit hook + CI).
 
-- Import shared components from `@repo/ui`
-- Follow existing component patterns in packages/ui
-- Use TypeScript interfaces for component props
+### Pre-commit Hooks
 
-### File Organization
+Husky + lint-staged enforce:
 
-- Experiments go in `apps/web/experiments/[category]/[experiment-name]/`
-- Each experiment requires a `metadata.json` file with structured information
-- Shared components in `packages/ui/src/`
-- Follow existing directory structure patterns
+- Oxlint + oxfmt on `.ts`/`.tsx` files
+- oxfmt on `.json`/`.css` files
+- markdownlint on `.md` files
 
-### Experiment Structure
+### Creating Experiments
 
-Each experiment should include:
+1. Create folder: `src/experiments/[name]/`
+2. Add `meta.ts` with metadata (slug, title, description, tags, createdAt, status)
+3. Add `index.tsx` with default export component
+4. Run `pnpm generate:registry`
+5. Published experiments appear on the homepage
 
-- `metadata.json` - Required structured metadata including:
-  - Basic info: id, title, description, slug, category
-  - Technical: techStack, difficulty, status, version
-  - Educational: prerequisites, learningObjectives
-  - Metadata: tags, keywords, author, timestamps
-- Component files (`.tsx` for React components)
-- Follow naming convention: `[category]/[experiment-name]`
+### Code Style
 
-## Experimental Nature
-
-This is an experimental lab where:
-
-- Breaking changes are expected and welcomed
-- New technologies are actively tested
-- Iteration speed is prioritized over stability
-- Creative solutions are encouraged
-
-## Build System
-
-### Turborepo Configuration
-
-- Tasks have dependency chains (build depends on ^build)
-- Caching enabled for build optimization
-- Special handling for experiments via `build:experiments` task
-- Experiment processing system in `lib/experiment-processing/`
-
-### Experiment Processing
-
-- Automated metadata validation and processing
-- Navigation tree generation from experiment structure
-- Build-time experiment discovery and organization
-
-### Environment
-
-- Node.js >=18 required
-- Development with hot reloading enabled
-- Build artifacts in `.next/` directories
-
-## When Working with This Repository
-
-1. **Respect the experimental nature** - suggest modern, cutting-edge solutions
-2. **Use the monorepo structure** - leverage shared packages appropriately
-3. **Follow TypeScript best practices** - maintain type safety
-4. **Consider performance** - this is a testing ground for optimization techniques
-5. **Suggest improvements** - this is a learning environment
-
-## Special Considerations
-
-- Some lint warnings are acceptable in experimental code
-- Turbopack is enabled by default for faster development
-- Component generation should use existing Turborepo generators
-- New experiments should follow the established patterns in `apps/web/experiments/`
+- Use TypeScript strict mode, avoid `any` where possible
+- Use `"use client"` for components with React hooks or interactivity
+- Follow shadcn/ui patterns for UI components
+- Don't edit `src/experiments/registry.ts` (auto-generated)
 
 ## Related Documentation
 
-- `CLAUDE.md` - Instructions for Claude AI assistant
-- `README.md` - General repository information
-- Individual package READMEs for specific guidance
+- `CLAUDE.md` - Detailed AI assistant instructions
+- `docs/repoweb.md` - RepoWeb proxy documentation
