@@ -97,7 +97,7 @@ Theme configuration is in `src/app/globals.css` with CSS variables.
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router
 │   ├── page.tsx           # Registry homepage
@@ -123,7 +123,7 @@ src/
 
 A built-in GitHub repository proxy for AI agents. Browse any public repo as plain text:
 
-```
+```text
 lab.joshmu.com/repoweb/owner/repo/path
 ```
 

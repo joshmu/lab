@@ -16,7 +16,7 @@ Josh Mu's Lab is an experimental Turborepo monorepo for testing modern web devel
 
 ### Project Structure
 
-```
+```text
 apps/
 ├── web/           # Main Next.js experimental app (port 3000)
 ├── docs/          # Documentation playground (port 3001)

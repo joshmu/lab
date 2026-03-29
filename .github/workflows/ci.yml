@@ -40,6 +40,9 @@ jobs:
       - name: Check formatting (oxfmt)
         run: pnpm format:check
 
+      - name: Lint markdown
+        run: pnpm lint:md
+
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest

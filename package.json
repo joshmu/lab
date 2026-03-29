@@ -16,6 +16,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "generate:registry": "tsx scripts/generate-registry.ts",
+    "lint:md": "markdownlint-cli2 '**/*.md' '#node_modules'",
     "validate": "pnpm lint && pnpm check-types && pnpm test && pnpm build",
     "prepare": "husky"
   },
@@ -45,6 +46,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^16.4.0",
+    "markdownlint-cli2": "^0.22.0",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",
     "tailwindcss": "^4.1.7",
