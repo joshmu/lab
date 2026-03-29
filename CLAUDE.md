@@ -15,12 +15,39 @@ pnpm build            # Generate registry + production build
 pnpm generate:registry # Regenerate experiments registry
 
 # Quality checks
-pnpm lint             # Run ESLint
-pnpm format           # Format with Prettier
+pnpm lint             # Run Oxlint
+pnpm lint:fix         # Run Oxlint with auto-fix
+pnpm format           # Format with oxfmt
+pnpm format:check     # Check formatting
+pnpm lint:md          # Lint markdown files
+pnpm lint:knip        # Dead code detection (non-blocking)
 pnpm check-types      # TypeScript type checking
 pnpm test             # Run Vitest tests
-pnpm validate         # Run all checks
+pnpm test:coverage    # Run tests with coverage
+pnpm audit            # Dependency vulnerability scan
+pnpm validate         # Run all checks (lint + format + md + types + test + build)
 ```
+
+## Commit Conventions
+
+All commits must follow [Conventional Commits](https://www.conventionalcommits.org/) with a **required scope**:
+
+```text
+type(scope): description
+```
+
+**Types:** `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`, `ci`, `build`, `style`
+
+Examples: `feat(maze): add circular layout`, `fix(ci): correct timeout value`, `docs(readme): update commands`
+
+Enforced by commitlint via commit-msg hook and CI.
+
+## Validation Hooks
+
+Pre-commit hooks run automatically via Husky + lint-staged:
+
+- **pre-commit**: Oxlint + oxfmt on staged `.ts`/`.tsx` files, oxfmt on `.json`/`.css`, markdownlint on `.md`
+- **commit-msg**: commitlint validates conventional commit format with required scope
 
 ## Creating a New Experiment
 
@@ -70,6 +97,23 @@ This project uses the **Lyra** style from shadcn/ui ("Boxy and sharp. Pairs well
 - Neutral color scheme with dark mode support (`.dark` class)
 - Theme variables defined in `src/app/globals.css`
 
+## CI Pipeline
+
+GitHub Actions runs on push to `main` and PRs:
+
+| Job | Description | Blocking |
+|-----|-------------|----------|
+| **commitlint** | Validates commit messages (PRs only) | Yes |
+| **lint** | Oxlint + oxfmt + markdownlint + knip | Yes (knip non-blocking) |
+| **typecheck** | `tsc --noEmit` | Yes |
+| **test** | Vitest with coverage thresholds | Yes |
+| **build** | Next.js production build (depends on lint/typecheck/test) | Yes |
+| **audit** | `pnpm audit --prod` | No |
+| **secrets** | Gitleaks secret scanning | Yes |
+| **ci-status** | Gate job aggregating all results | Yes |
+
+Concurrency control cancels in-progress PR runs. All jobs have explicit timeouts.
+
 ## RepoWeb — GitHub Proxy for AI Agents
 
 A top-level route (`/repoweb/`) that proxies GitHub's Contents API, serving repository files and directories as plain text for AI agent consumption.
@@ -104,5 +148,7 @@ A top-level route (`/repoweb/`) that proxies GitHub's Contents API, serving repo
 
 - The registry is auto-generated - don't edit `src/experiments/registry.ts` manually
 - All experiments must have `"use client"` if they use React hooks or interactivity
+- Pre-commit hooks enforce linting/formatting on staged files
+- Commits require conventional format with scope: `type(scope): description`
 - Run `pnpm validate` before committing to ensure all checks pass
 - Experiments with `status: "draft"` won't appear on the homepage
