@@ -43,6 +43,10 @@ jobs:
       - name: Lint markdown
         run: pnpm lint:md
 
+      - name: Dead code detection (knip)
+        run: pnpm lint:knip
+        continue-on-error: true
+
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
