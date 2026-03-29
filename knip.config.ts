@@ -7,15 +7,19 @@ const config: KnipConfig = {
     "src/app/**/route.ts",
     "src/experiments/**/index.tsx",
     "src/experiments/**/meta.ts",
-    "scripts/generate-registry.ts",
+    "src/experiments/**/*.{ts,tsx}",
+    "src/lib/types.ts",
+    "src/lib/github.ts",
+    "postcss.config.mjs",
   ],
   project: ["src/**/*.{ts,tsx}"],
-  ignore: ["src/experiments/registry.ts"],
+  ignore: ["src/experiments/registry.ts", "src/components/ui/**"],
   ignoreDependencies: [
     "tw-animate-css",
-    "@tailwindcss/postcss",
-    "@testing-library/dom",
     "tailwindcss",
+    "@testing-library/dom",
+    "@testing-library/react",
+    "postcss",
   ],
 };
 

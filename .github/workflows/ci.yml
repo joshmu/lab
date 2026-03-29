@@ -71,7 +71,6 @@ jobs:
 
       - name: Dead code detection (knip)
         run: pnpm lint:knip
-        continue-on-error: true
 
   typecheck:
     name: Type Check
