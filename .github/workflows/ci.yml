@@ -93,7 +93,7 @@ jobs:
         run: pnpm generate:registry
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm test:ci
 
   build:
     name: Build
