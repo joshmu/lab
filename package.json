@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm generate:registry",
     "dev": "next dev --turbopack",
     "build": "pnpm generate:registry && next build",
     "start": "next start",
@@ -17,10 +18,12 @@
     "test:coverage": "vitest run --coverage",
     "test:ci": "vitest run --coverage",
     "generate:registry": "tsx scripts/generate-registry.ts",
+    "experiment:new": "tsx scripts/new-experiment.ts",
+    "experiment:check": "tsx scripts/check-experiment.ts",
     "lint:md": "markdownlint-cli2 '**/*.md' '#node_modules'",
     "lint:knip": "pnpm exec knip",
     "audit": "pnpm audit --prod",
-    "validate": "pnpm lint && pnpm format:check && pnpm lint:md && pnpm check-types && pnpm test && pnpm build",
+    "validate": "pnpm generate:registry && pnpm lint && pnpm format:check && pnpm lint:md && pnpm check-types && pnpm test && pnpm build",
     "prepare": "husky"
   },
   "dependencies": {

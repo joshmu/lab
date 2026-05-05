@@ -1,83 +1,47 @@
 # Lab
 
-A personal experiments registry for web development explorations. Built with Next.js 15 and the shadcn/ui Lyra theme for a sharp, modern aesthetic.
+A sandbox for agents to drop single-page ideas into. The sandbox handles registration, routing, validation, and discovery; the experiment author (typically an AI agent) focuses on the idea itself. See [ADR-0001](./docs/adr/0001-sandbox-for-agents.md) for the framing.
 
 ## Quick Start
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Start development server
-pnpm dev
-
-# Open http://localhost:3000
+pnpm dev   # http://localhost:3000
 ```
 
 ## Creating an Experiment
 
-1. Create a new folder in `src/experiments/`:
-
 ```bash
-mkdir src/experiments/my-experiment
+pnpm experiment:new my-experiment    # scaffolds folder + meta.ts + index.tsx
+# edit src/experiments/my-experiment/index.tsx
+pnpm experiment:check my-experiment  # validates meta + default export
 ```
 
-2. Add a metadata file (`meta.ts`):
+Drafts (`status: "draft"`) are accessible at `/experiments/<slug>` in dev so you can preview without flipping flags. Flip to `"published"` when ready and the experiment appears on the homepage.
 
-```typescript
-import type { ExperimentMeta } from "@/lib/types";
-
-export const meta: ExperimentMeta = {
-  slug: "my-experiment",
-  title: "My Experiment",
-  description: "A brief description of what this experiment demonstrates",
-  tags: ["react", "css"],
-  createdAt: "2024-01-26",
-  status: "published", // or "draft" to hide from registry
-};
-```
-
-3. Create the experiment component (`index.tsx`):
-
-```tsx
-"use client";
-
-export default function MyExperiment() {
-  return (
-    <div>
-      <h2>My Experiment</h2>
-      {/* Your experiment code here */}
-    </div>
-  );
-}
-```
-
-4. Regenerate the registry:
-
-```bash
-pnpm generate:registry
-```
-
-5. Your experiment will now appear on the homepage and be accessible at `/experiments/my-experiment`
+Full agent-author rules: [`src/experiments/AGENTS.md`](./src/experiments/AGENTS.md).
+Domain vocabulary: [`CONTEXT.md`](./CONTEXT.md).
 
 ## Commands
 
-| Command                  | Description                                       |
-| ------------------------ | ------------------------------------------------- |
-| `pnpm dev`               | Start development server with Turbopack           |
-| `pnpm build`             | Generate registry and build for production        |
-| `pnpm start`             | Start production server                           |
-| `pnpm lint`              | Run Oxlint                                        |
-| `pnpm format`            | Format code with oxfmt                            |
-| `pnpm format:check`      | Check formatting                                  |
-| `pnpm lint:md`           | Lint markdown files                               |
-| `pnpm lint:knip`         | Dead code detection                               |
-| `pnpm check-types`       | Run TypeScript type checking                      |
-| `pnpm test`              | Run tests with Vitest                             |
-| `pnpm test:coverage`     | Run tests with coverage                           |
-| `pnpm audit`             | Dependency vulnerability scan                     |
-| `pnpm generate:registry` | Regenerate experiments registry                   |
-| `pnpm validate`          | Run all checks (lint, format, types, test, build) |
+| Command                        | Description                                              |
+| ------------------------------ | -------------------------------------------------------- |
+| `pnpm experiment:new <slug>`   | Scaffold a new experiment (folder + meta.ts + index.tsx) |
+| `pnpm experiment:check <slug>` | Validate an experiment's meta + default export           |
+| `pnpm dev`                     | Start dev server (regenerates registry first)            |
+| `pnpm build`                   | Generate registry + production build                     |
+| `pnpm start`                   | Start production server                                  |
+| `pnpm lint`                    | Run Oxlint                                               |
+| `pnpm format`                  | Format code with oxfmt                                   |
+| `pnpm format:check`            | Check formatting                                         |
+| `pnpm lint:md`                 | Lint markdown files                                      |
+| `pnpm lint:knip`               | Dead code detection                                      |
+| `pnpm check-types`             | Run TypeScript type checking                             |
+| `pnpm test`                    | Run tests with Vitest                                    |
+| `pnpm test:coverage`           | Run tests with coverage                                  |
+| `pnpm audit`                   | Dependency vulnerability scan                            |
+| `pnpm generate:registry`       | Regenerate experiments registry (rarely needed manually) |
+| `pnpm validate`                | Run all checks (lint, format, types, test, build)        |
 
 ## Stack
 
@@ -113,7 +77,7 @@ src/
 ├── components/
 │   └── ui/                # shadcn/ui components
 ├── experiments/           # Experiment definitions
-│   ├── registry.ts        # Auto-generated registry
+│   ├── registry.ts        # Generated build artefact (gitignored)
 │   └── [name]/
 │       ├── index.tsx      # Experiment component
 │       └── meta.ts        # Experiment metadata

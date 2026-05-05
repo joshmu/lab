@@ -47,7 +47,15 @@ export default async function ExperimentPage(props: ExperimentPageProps) {
   const params = await props.params;
   const experiment = registry.find((exp) => exp.slug === params.slug);
 
-  if (!experiment || experiment.status !== "published") {
+  if (!experiment) {
+    notFound();
+  }
+  // Drafts are accessible directly in dev so authors can preview WIP without
+  // flipping status; in production they 404 (and aren't in generateStaticParams).
+  if (
+    experiment.status !== "published" &&
+    process.env.NODE_ENV === "production"
+  ) {
     notFound();
   }
 
