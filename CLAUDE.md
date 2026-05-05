@@ -6,6 +6,8 @@ This file provides guidance to Claude Code when working with this repository.
 
 This is an experiments registry - a Next.js application for creating and showcasing web development experiments. Each experiment is a standalone page that gets automatically listed on the homepage.
 
+Domain vocabulary lives in [`CONTEXT.md`](./CONTEXT.md). Use those terms (**Experiment**, **Meta**, **Registry**) when referring to project concepts.
+
 ## Essential Commands
 
 ```bash
@@ -54,7 +56,7 @@ Pre-commit hooks run automatically via Husky + lint-staged:
 1. Create folder: `src/experiments/[experiment-name]/`
 2. Add `meta.ts` with experiment metadata
 3. Add `index.tsx` with the experiment component (must be default export)
-4. Run `pnpm generate:registry` to update the registry
+4. Restart `pnpm dev` (the registry regenerates on `predev` and `prebuild`)
 5. The experiment will appear on the homepage if `status: "published"`
 
 ### Experiment Metadata Schema
@@ -77,8 +79,8 @@ interface ExperimentMeta {
 
 - `src/app/page.tsx` - Registry homepage
 - `src/app/experiments/[slug]/page.tsx` - Dynamic experiment routes
-- `src/experiments/registry.ts` - Auto-generated from experiment metadata
-- `scripts/generate-registry.ts` - Registry generation script
+- `src/experiments/registry.ts` - Build artefact, gitignored. Regenerated on `pnpm dev`, `pnpm build`, `pnpm validate`, and in CI before each check job. Never commit it.
+- `scripts/generate-registry.ts` - Registry generation script (reads each `meta.ts`, writes `registry.ts`)
 
 ### Component Library
 
@@ -146,7 +148,7 @@ A top-level route (`/repoweb/`) that proxies GitHub's Contents API, serving repo
 
 ## Important Notes
 
-- The registry is auto-generated - don't edit `src/experiments/registry.ts` manually
+- `src/experiments/registry.ts` is a gitignored build artefact regenerated automatically — do not commit it or edit it by hand. The single source of truth for an experiment is its own `meta.ts`.
 - All experiments must have `"use client"` if they use React hooks or interactivity
 - Pre-commit hooks enforce linting/formatting on staged files
 - Commits require conventional format with scope: `type(scope): description`

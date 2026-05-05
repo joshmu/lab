@@ -52,10 +52,10 @@ export default function MyExperiment() {
 }
 ```
 
-4. Regenerate the registry:
+4. Restart `pnpm dev` (the registry regenerates automatically before dev/build):
 
 ```bash
-pnpm generate:registry
+pnpm dev
 ```
 
 5. Your experiment will now appear on the homepage and be accessible at `/experiments/my-experiment`
@@ -113,7 +113,7 @@ src/
 ├── components/
 │   └── ui/                # shadcn/ui components
 ├── experiments/           # Experiment definitions
-│   ├── registry.ts        # Auto-generated registry
+│   ├── registry.ts        # Generated build artefact (gitignored)
 │   └── [name]/
 │       ├── index.tsx      # Experiment component
 │       └── meta.ts        # Experiment metadata
