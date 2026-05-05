@@ -4,17 +4,23 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Repository Overview
 
-This is an experiments registry - a Next.js application for creating and showcasing web development experiments. Each experiment is a standalone page that gets automatically listed on the homepage.
+A **sandbox** for agents to drop single-page ideas into. The sandbox handles registration, routing, validation, and discovery; the agent-author focuses on the idea. Architectural decisions are made from that audience's perspective first — see [ADR-0001](./docs/adr/0001-sandbox-for-agents.md).
 
-Domain vocabulary lives in [`CONTEXT.md`](./CONTEXT.md). Use those terms (**Experiment**, **Meta**, **Registry**) when referring to project concepts.
+Domain vocabulary lives in [`CONTEXT.md`](./CONTEXT.md). Use those terms (**Sandbox**, **Experiment**, **Meta**, **Registry**) when referring to project concepts.
+
+**If you are authoring a new experiment, read [`src/experiments/AGENTS.md`](./src/experiments/AGENTS.md) first.** It's the entry point: scaffolder command, what you can change, the validation verb.
 
 ## Essential Commands
 
 ```bash
+# Authoring an experiment
+pnpm experiment:new <slug>    # Scaffold a new experiment (folder + meta.ts + index.tsx)
+pnpm experiment:check <slug>  # Validate meta + default export
+
 # Development
-pnpm dev              # Start dev server (http://localhost:3000)
+pnpm dev              # Start dev server (regenerates registry first)
 pnpm build            # Generate registry + production build
-pnpm generate:registry # Regenerate experiments registry
+pnpm generate:registry # Regenerate experiments registry (rarely needed manually)
 
 # Quality checks
 pnpm lint             # Run Oxlint
@@ -53,11 +59,13 @@ Pre-commit hooks run automatically via Husky + lint-staged:
 
 ## Creating a New Experiment
 
-1. Create folder: `src/experiments/[experiment-name]/`
-2. Add `meta.ts` with experiment metadata
-3. Add `index.tsx` with the experiment component (must be default export)
-4. Restart `pnpm dev` (the registry regenerates on `predev` and `prebuild`)
-5. The experiment will appear on the homepage if `status: "published"`
+```bash
+pnpm experiment:new <slug>      # scaffolds folder + meta.ts + index.tsx (status: "draft")
+pnpm dev                        # preview at /experiments/<slug> (drafts work in dev)
+pnpm experiment:check <slug>    # validates meta + default export before claiming done
+```
+
+Then flip `status` to `"published"` in `meta.ts` to surface the experiment on the homepage. Full agent-author rules live in [`src/experiments/AGENTS.md`](./src/experiments/AGENTS.md).
 
 ### Experiment Metadata Schema
 
@@ -77,10 +85,14 @@ interface ExperimentMeta {
 
 ### Key Files
 
-- `src/app/page.tsx` - Registry homepage
-- `src/app/experiments/[slug]/page.tsx` - Dynamic experiment routes
-- `src/experiments/registry.ts` - Build artefact, gitignored. Regenerated on `pnpm dev`, `pnpm build`, `pnpm validate`, and in CI before each check job. Never commit it.
-- `scripts/generate-registry.ts` - Registry generation script (reads each `meta.ts`, writes `registry.ts`)
+- `src/app/page.tsx` - Registry homepage (lists published experiments only)
+- `src/app/experiments/[slug]/page.tsx` - Dynamic experiment routes; drafts accessible in dev only
+- `src/experiments/AGENTS.md` - Rules for whoever (usually an agent) is authoring an experiment
+- `src/experiments/registry.ts` - Build artefact, gitignored. Regenerated automatically. Never commit it.
+- `scripts/registry-lib.ts` - Shared meta loader + strict validator
+- `scripts/generate-registry.ts` - Generates `registry.ts` from each `meta.ts` (fails build on invalid meta)
+- `scripts/new-experiment.ts` - Scaffolder behind `pnpm experiment:new`
+- `scripts/check-experiment.ts` - Verifier behind `pnpm experiment:check`
 
 ### Component Library
 
@@ -150,7 +162,8 @@ A top-level route (`/repoweb/`) that proxies GitHub's Contents API, serving repo
 
 - `src/experiments/registry.ts` is a gitignored build artefact regenerated automatically — do not commit it or edit it by hand. The single source of truth for an experiment is its own `meta.ts`.
 - All experiments must have `"use client"` if they use React hooks or interactivity
+- Cross-experiment helpers go in `src/experiments/_shared/`. Don't reach into `src/lib/` for them — that's sandbox infrastructure. Promotion of a helper to `src/lib/` is a deliberate human action.
 - Pre-commit hooks enforce linting/formatting on staged files
 - Commits require conventional format with scope: `type(scope): description`
 - Run `pnpm validate` before committing to ensure all checks pass
-- Experiments with `status: "draft"` won't appear on the homepage
+- Experiments with `status: "draft"` are accessible at `/experiments/<slug>` in dev only; in production they 404

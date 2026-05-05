@@ -10,9 +10,8 @@ const config: KnipConfig = {
     "src/experiments/**/*.{ts,tsx}",
     "src/lib/types.ts",
     "src/lib/github.ts",
-    "postcss.config.mjs",
   ],
-  project: ["src/**/*.{ts,tsx}"],
+  project: ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
   ignore: ["src/experiments/registry.ts", "src/components/ui/**"],
   ignoreDependencies: [
     "tw-animate-css",
